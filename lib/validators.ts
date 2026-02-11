@@ -15,3 +15,11 @@ export const ProductCreateSchema = z.object({
 export const ProductUpdateSchema = ProductCreateSchema.partial().extend({
   id: z.string().min(1).optional()
 });
+
+export const MovementCreateSchema = z.object({
+  storeId: z.string().min(1),
+  productId: z.string().min(1),
+  type: z.enum(["IN", "OUT", "ADJUST"]),
+  qty: z.coerce.number().int().min(0),
+  note: z.string().optional().or(z.literal(""))
+});

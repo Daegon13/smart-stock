@@ -98,9 +98,13 @@ export function ProductManager({ storeId, initial }: { storeId: string; initial:
                 <Input value={form.sku} onChange={(e) => setForm((f) => ({ ...f, sku: e.target.value }))} />
               </div>
               <div>
-                <Label>Categoría</Label>
-                <Input value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))} />
+                <Label>Unidad</Label>
+                <Input value={form.unit} onChange={(e) => setForm((f) => ({ ...f, unit: e.target.value }))} placeholder="unidad / caja / kg" />
               </div>
+            </div>
+            <div>
+              <Label>Categoría</Label>
+              <Input value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>

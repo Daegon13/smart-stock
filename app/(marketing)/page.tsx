@@ -41,9 +41,9 @@ export default function HomePage() {
         </Card>
         <Card>
           <CardContent>
-            <div className="text-sm font-semibold text-slate-900">Reportes simples</div>
+            <div className="text-sm font-semibold text-slate-900">Asistente IA</div>
             <p className="mt-2 text-sm text-slate-600">
-              Top vendidos, productos parados, alertas. Diseñado para dueños, no para contadores.
+              Preguntás en español y te responde con tus datos (con fallback si no hay API key).
             </p>
           </CardContent>
         </Card>

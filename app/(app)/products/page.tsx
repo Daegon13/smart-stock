@@ -1,11 +1,6 @@
 import { prisma } from "@/lib/db";
+import { getOrCreateDefaultStore } from "@/lib/defaultStore";
 import { ProductManager } from "@/components/ProductManager";
-
-async function getOrCreateDefaultStore() {
-  const existing = await prisma.store.findFirst();
-  if (existing) return existing;
-  return prisma.store.create({ data: { name: "Demo Store" } });
-}
 
 export default async function ProductsPage() {
   const store = await getOrCreateDefaultStore();
