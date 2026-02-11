@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum MovementType {
+  IN
+  OUT
+  ADJUST
+}
+
+model Store {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products  Product[]
+  movements InventoryMovement[]
+}
+
+model Supplier {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products Product[]
+}
+
+model Product {
+  id           String   @id @default(cuid())
+  name         String
+  sku          String?
+  category     String?
+  unit         String   @default("unidad")
+  cost         Float    @default(0)
+  price        Float    @default(0)
+  stockMin     Int      @default(0)
+  currentStock Int      @default(0)
+
+  storeId String
+  store   Store  @relation(fields: [storeId], references: [id])
+
+  supplierId String?
+  supplier   Supplier? @relation(fields: [supplierId], references: [id])
+
+  movements InventoryMovement[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([storeId])
+  @@index([supplierId])
+}
+
+model InventoryMovement {
+  id   String       @id @default(cuid())
+  type MovementType
+  qty  Int
+  note String?
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  storeId String
+  store   Store @relation(fields: [storeId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+  @@index([storeId])
+}
