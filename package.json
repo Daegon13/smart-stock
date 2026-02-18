@@ -15,7 +15,8 @@
     "db:seed": "ts-node --transpile-only scripts/seed.ts",
     "db:seed:maybe": "node scripts/seed-maybe.mjs",
     "use:postgres": "node scripts/use-postgres.mjs",
-    "dev:pg": "npm run use:postgres && prisma generate && prisma db push && next dev"
+    "dev:pg": "npm run use:postgres && prisma generate && prisma db push && next dev",
+    "vercel-build": "npm run use:postgres && prisma generate && prisma db push && npm run db:seed:maybe && next build"
   },
   "dependencies": {
     "@prisma/client": "^5.16.0",
