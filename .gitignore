@@ -8,4 +8,5 @@ coverage
 .env.*.local
 prisma/dev.db
 prisma/dev.db-journal
-.env.example
+!.env.example
+.env.*
