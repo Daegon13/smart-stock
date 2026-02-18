@@ -3,6 +3,16 @@ type ResponsesAPIMessage = {
   content: string;
 };
 
+function sanitizeModel(input?: unknown): string | undefined {
+  if (typeof input !== "string") return undefined;
+  const model = input.trim();
+  if (!model) return undefined;
+  // Allow typical OpenAI model id patterns, e.g. gpt-5.2, gpt-4o-mini, etc.
+  if (model.length > 80) return undefined;
+  if (!/^[A-Za-z0-9._:-]+$/.test(model)) return undefined;
+  return model;
+}
+
 function extractOutputText(json: any): string {
   // Prefer convenience property if present.
   if (typeof json?.output_text === "string") return json.output_text;
@@ -26,7 +36,9 @@ export async function createOpenAITextResponse(args: {
   const apiKey = process.env.OPENAI_API_KEY || "";
   if (!apiKey) return { text: "", usedAI: false };
 
-  const model = args.model || process.env.OPENAI_MODEL || "gpt-5";
+  const requested = sanitizeModel(args.model);
+  const fallback = sanitizeModel(process.env.OPENAI_MODEL) || "gpt-5";
+  const model = requested || fallback;
 
   const res = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
@@ -36,18 +48,82 @@ export async function createOpenAITextResponse(args: {
     },
     body: JSON.stringify({
       model,
-      input: args.messages,
-      text: { format: { type: "text" } }
+      // The Responses API accepts an array of role messages as input items.
+      input: args.messages
     })
   });
 
   if (!res.ok) {
     const msg = await res.text().catch(() => "");
-    // No rompemos el MVP por errores de IA.
-    return { text: `No pude usar IA ahora mismo. (${res.status})`, usedAI: false };
+    const details = msg ? ` — ${msg.slice(0, 220)}` : "";
+    // No rompemos el MVP por errores de IA, pero devolvemos diagnóstico.
+    return { text: `No pude usar IA ahora mismo (HTTP ${res.status})${details}`, usedAI: false };
   }
 
   const json = await res.json().catch(() => null);
   const text = extractOutputText(json);
   return { text: text || "(Respuesta vacía)", usedAI: true };
+}
+
+export type JSONSchema = any;
+
+export async function createOpenAIJSONResponse<T = any>(args: {
+  messages: Array<{ role: "system" | "developer" | "user" | "assistant"; content: string }>;
+  schema: JSONSchema;
+  model?: string;
+}): Promise<{ usedAI: boolean; parsed: T | null; text?: string; error?: string }>
+{
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    return { usedAI: false, parsed: null, error: "OPENAI_API_KEY no configurada" };
+  }
+
+  const model = args.model || process.env.OPENAI_MODEL || "gpt-5";
+
+  try {
+    const res = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model,
+        input: args.messages,
+        // Structured Outputs (JSON schema)
+        text: {
+          format: {
+            type: "json_schema",
+            strict: true,
+            schema: args.schema
+          }
+        }
+      })
+    });
+
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      const msg = data?.error?.message || `OpenAI error (${res.status})`;
+      // Fallback: try plain text (some models might not support json_schema)
+      const fallback = await createOpenAITextResponse({ messages: args.messages, model });
+      if (fallback.usedAI && fallback.text) {
+        try {
+          return { usedAI: true, parsed: JSON.parse(fallback.text) as T, text: fallback.text };
+        } catch {
+          return { usedAI: false, parsed: null, error: msg };
+        }
+      }
+      return { usedAI: false, parsed: null, error: msg };
+    }
+
+    const text = extractOutputText(data);
+    try {
+      const parsed = JSON.parse(text) as T;
+      return { usedAI: true, parsed, text };
+    } catch (e: any) {
+      return { usedAI: false, parsed: null, text, error: "No se pudo parsear JSON" };
+    }
+  } catch (e: any) {
+    return { usedAI: false, parsed: null, error: e?.message || "Error llamando a OpenAI" };
+  }
 }

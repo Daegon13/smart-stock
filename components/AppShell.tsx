@@ -2,89 +2,109 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import * as React from "react";
+import { ReactNode, useEffect, useState } from "react";
+import { Badge, Button, Sticker } from "@/components/ui";
+import { RoleSwitcher } from "@/components/RoleSwitcher";
 
+// Nota: algunos paths viejos quedaron por patches anteriores (pos/tickets/purchases/suppliers).
+// Los reemplazamos por los módulos reales del MVP para evitar 404 y dejar la demo prolija.
 const nav = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/products", label: "Productos" },
-  { href: "/movements", label: "Movimientos" },
-  { href: "/stock", label: "Stock inteligente" },
-  { href: "/assistant", label: "Asistente IA" }
+  { href: "/dashboard", label: "Dashboard", icon: "📊" },
+  { href: "/today", label: "Qué hacer hoy", icon: "✅" },
+  { href: "/products", label: "Productos", icon: "📦" },
+  { href: "/movements", label: "Movimientos", icon: "🧾" },
+  { href: "/stock", label: "Stock inteligente", icon: "🧠" },
+  { href: "/orders", label: "Órdenes de compra", icon: "🚚" },
+  { href: "/import", label: "Importar", icon: "⬆️" },
+  { href: "/reconcile", label: "Conciliar tickets", icon: "🔎" },
+  { href: "/categories", label: "Categorías", icon: "🏷️" },
+  { href: "/aliases", label: "Alias", icon: "🔁" },
+  { href: "/assistant", label: "Asistente IA", icon: "🤖" },
+  { href: "/copilot", label: "Copiloto IA", icon: "🧩" }
 ];
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const [open, setOpen] = React.useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Topbar (mobile) */}
-      <header className="sticky top-0 z-20 border-b border-slate-200 bg-white md:hidden">
-        <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
-          <button
-            onClick={() => setOpen((v) => !v)}
-            className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-            aria-label="Abrir menú"
-          >
+      {/* Mobile topbar */}
+      <div className="sticky top-0 z-20 flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 md:hidden">
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => setMobileOpen((v) => !v)}>
             ☰
-          </button>
-          <Link href="/dashboard" className="font-semibold text-slate-900">
-            Stock Inteligente
-          </Link>
-          <div className="ml-auto text-xs text-slate-500">MVP</div>
+          </Button>
+          <span className="text-sm font-bold text-slate-900">SmartStock</span>
+          <Badge tone="slate" className="ml-1">
+            Demo
+          </Badge>
         </div>
-      </header>
+        <div className="text-xs text-slate-500">{pathname}</div>
+      </div>
 
-      <div className="mx-auto grid max-w-6xl grid-cols-1 md:grid-cols-[260px_1fr]">
+      {/* Layout */}
+      <div className="mx-auto grid max-w-7xl grid-cols-1 md:grid-cols-[280px_1fr]">
         {/* Sidebar */}
         <aside
-          className={
-            "border-r border-slate-200 bg-white md:sticky md:top-0 md:block md:h-screen " +
-            (open ? "block" : "hidden md:block")
-          }
+          className={[
+            "border-r border-slate-200 bg-white md:sticky md:top-0 md:h-screen",
+            mobileOpen ? "block" : "hidden md:block"
+          ].join(" ")}
         >
-          <div className="flex h-full flex-col">
-            <div className="hidden border-b border-slate-200 px-4 py-4 md:block">
-              <Link href="/dashboard" className="text-base font-semibold text-slate-900">
-                Stock Inteligente
-              </Link>
-              <div className="mt-1 text-xs text-slate-500">Panel de operaciones</div>
+          <div className="flex h-full flex-col p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sticker tone="purple">✨</Sticker>
+                <div>
+                  <div className="text-sm font-bold text-slate-900">SmartStock</div>
+                  <div className="text-xs text-slate-500">Minimarket • Uruguay</div>
+                </div>
+              </div>
+              <Badge tone="slate">MVP</Badge>
             </div>
 
-            <nav className="p-3">
-              <div className="mb-2 px-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                Menú
-              </div>
-              <div className="space-y-1">
-                {nav.map((i) => {
-                  const active = pathname?.startsWith(i.href);
-                  return (
-                    <Link
-                      key={i.href}
-                      href={i.href}
-                      onClick={() => setOpen(false)}
-                      className={
-                        "block rounded-lg px-3 py-2 text-sm transition " +
-                        (active
-                          ? "bg-slate-900 text-white"
-                          : "text-slate-700 hover:bg-slate-100 hover:text-slate-900")
-                      }
-                    >
-                      {i.label}
-                    </Link>
-                  );
-                })}
-              </div>
+            <div className="mt-3">
+              <RoleSwitcher />
+            </div>
+
+            <nav className="mt-4 space-y-1">
+              {nav.map((item) => {
+                const active = pathname === item.href || pathname.startsWith(item.href + "/");
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={[
+                      "flex items-center justify-between rounded-xl px-3 py-2 text-sm transition",
+                      active ? "bg-slate-900 text-white" : "text-slate-700 hover:bg-slate-100"
+                    ].join(" ")}
+                  >
+                    <span className="flex items-center gap-2">
+                      <span aria-hidden>{item.icon}</span>
+                      {item.label}
+                    </span>
+                    {active ? <span className="text-xs">•</span> : null}
+                  </Link>
+                );
+              })}
             </nav>
 
-            <div className="mt-auto border-t border-slate-200 p-4 text-xs text-slate-500">
-              Consejo: empezá por <span className="font-medium">Movimientos</span> para que el stock sea confiable.
+            <div className="mt-auto pt-4 text-xs text-slate-500">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                <div className="font-semibold text-slate-700">Modo demo</div>
+                <div className="mt-1">Importás → conciliás tickets → ajustás stock → armás pedidos → IA te guía.</div>
+              </div>
             </div>
           </div>
         </aside>
 
-        {/* Content */}
-        <main className="px-4 py-6 md:px-6 md:py-10">{children}</main>
+        {/* Main */}
+        <main className="p-4 md:p-6">{children}</main>
       </div>
     </div>
   );

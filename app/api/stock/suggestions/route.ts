@@ -6,9 +6,11 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const storeId = searchParams.get("storeId") || "";
   const lookbackDays = Number(searchParams.get("lookbackDays") || "30");
-  const leadTimeDays = Number(searchParams.get("leadTimeDays") || "3");
-  const safetyDays = Number(searchParams.get("safetyDays") || "4");
-  const reviewDays = Number(searchParams.get("reviewDays") || "7");
+
+  // Compat: si llegan estos params viejos, los usamos como defaults (fallback)
+  const fallbackLead = Number(searchParams.get("leadTimeDays") || "3");
+  const fallbackCoverage = Number(searchParams.get("coverageDays") || searchParams.get("reviewDays") || "14");
+  const fallbackSafety = Number(searchParams.get("safetyStock") || searchParams.get("safetyDays") || "0");
 
   if (!storeId) return NextResponse.json({ error: "storeId requerido" }, { status: 400 });
 
@@ -17,13 +19,18 @@ export async function GET(req: Request) {
     select: {
       id: true,
       name: true,
+      sku: true,
       unit: true,
       cost: true,
       price: true,
       stockMin: true,
+      leadTimeDays: true,
+      coverageDays: true,
+      safetyStock: true,
       currentStock: true,
       supplierId: true,
-      category: true
+      category: true,
+      supplier: { select: { name: true, phone: true } }
     }
   });
 
@@ -32,11 +39,17 @@ export async function GET(req: Request) {
     select: { productId: true, type: true, qty: true, createdAt: true }
   });
 
-  const suggestions = computeSuggestions(products, movements as any, {
-    lookbackDays: isFinite(lookbackDays) ? lookbackDays : 30,
-    leadTimeDays: isFinite(leadTimeDays) ? leadTimeDays : 3,
-    safetyDays: isFinite(safetyDays) ? safetyDays : 4,
-    reviewDays: isFinite(reviewDays) ? reviewDays : 7
+  const mappedProducts = products.map(({ supplier, ...p }) => ({
+    ...p,
+    supplierName: supplier?.name ?? null,
+    supplierPhone: supplier?.phone ?? null
+  }));
+
+  const suggestions = computeSuggestions(mappedProducts as any, movements as any, {
+    lookbackDays: Number.isFinite(lookbackDays) ? lookbackDays : 30,
+    leadTimeDays: Number.isFinite(fallbackLead) ? fallbackLead : 3,
+    coverageDays: Number.isFinite(fallbackCoverage) ? fallbackCoverage : 14,
+    safetyStock: Number.isFinite(fallbackSafety) ? fallbackSafety : 0
   });
 
   return NextResponse.json({ suggestions });

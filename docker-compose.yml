@@ -1,0 +1,13 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: smartstock
+      POSTGRES_PASSWORD: smartstock
+      POSTGRES_DB: smartstock
+    ports:
+      - "5432:5432"
+    volumes:
+      - smartstock_pg:/var/lib/postgresql/data
+volumes:
+  smartstock_pg:

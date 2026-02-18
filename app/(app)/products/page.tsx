@@ -4,10 +4,30 @@ import { ProductManager } from "@/components/ProductManager";
 
 export default async function ProductsPage() {
   const store = await getOrCreateDefaultStore();
-  const products = await prisma.product.findMany({
+
+  // Tipado explícito para evitar "implicit any" en builds donde Prisma Client types todavía no existan.
+  type ProductRow = {
+    id: string;
+    name: string;
+    sku: string | null;
+    category: string | null;
+    categoryId: string | null;
+    unit: string;
+    cost: number;
+    price: number;
+
+    stockMin: number;
+    leadTimeDays: number;
+    coverageDays: number;
+    safetyStock: number;
+
+    currentStock: number;
+  };
+
+  const products = (await prisma.product.findMany({
     where: { storeId: store.id },
     orderBy: { createdAt: "desc" }
-  });
+  })) as ProductRow[];
 
   return (
     <div className="space-y-4">
@@ -18,15 +38,21 @@ export default async function ProductsPage() {
 
       <ProductManager
         storeId={store.id}
-        initial={products.map((p) => ({
+        initial={products.map((p: ProductRow) => ({
           id: p.id,
           name: p.name,
           sku: p.sku,
           category: p.category,
+          categoryId: p.categoryId,
           unit: p.unit,
           cost: p.cost,
           price: p.price,
+
           stockMin: p.stockMin,
+          leadTimeDays: p.leadTimeDays,
+          coverageDays: p.coverageDays,
+          safetyStock: p.safetyStock,
+
           currentStock: p.currentStock
         }))}
       />

@@ -4,20 +4,25 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && prisma db push && npm run db:seed:maybe && next build",
     "start": "next start",
     "lint": "next lint",
+    "postinstall": "prisma generate",
     "setup": "npm run prisma:generate && npm run db:push && npm run db:seed",
     "prisma:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
-    "db:seed": "ts-node --transpile-only scripts/seed.ts"
+    "db:seed": "ts-node --transpile-only scripts/seed.ts",
+    "db:seed:maybe": "ts-node --transpile-only scripts/seed-maybe.ts",
+    "use:postgres": "node scripts/use-postgres.mjs",
+    "dev:pg": "npm run use:postgres && prisma generate && prisma db push && next dev"
   },
   "dependencies": {
     "@prisma/client": "^5.16.0",
     "next": "^14.2.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "xlsx": "^0.18.5",
     "zod": "^3.23.8"
   },
   "devDependencies": {

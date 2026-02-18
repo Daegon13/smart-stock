@@ -3,14 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
-}
-
-enum MovementType {
-  IN
-  OUT
-  ADJUST
 }
 
 model Store {
@@ -19,8 +13,23 @@ model Store {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  products  Product[]
-  movements InventoryMovement[]
+  products       Product[]
+  movements      InventoryMovement[]
+  purchaseDrafts PurchaseDraft[]
+  purchaseOrders PurchaseOrder[]
+
+  // Tickets / ventas importadas
+  ticketImports TicketImportBatch[]
+  tickets       Ticket[]
+
+  // Aliases para matcheo (códigos/nombres) desde POS
+  productAliases ProductAlias[]
+
+  // Taxonomías por ámbito (PRODUCT, SUPPLIER, ORDER, etc.)
+  categories Category[]
+
+  // Auditoría (acciones del Copiloto y del usuario)
+  auditLogs AuditLog[]
 }
 
 model Supplier {
@@ -30,38 +39,104 @@ model Supplier {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  products Product[]
+  products       Product[]
+  purchaseDrafts PurchaseDraft[]
+  purchaseOrders PurchaseOrder[]
 }
 
 model Product {
-  id           String   @id @default(cuid())
-  name         String
-  sku          String?
-  category     String?
-  unit         String   @default("unidad")
-  cost         Float    @default(0)
-  price        Float    @default(0)
-  stockMin     Int      @default(0)
-  currentStock Int      @default(0)
+  id       String @id @default(cuid())
+  name     String
+  sku      String?
+  category String? // legacy (texto libre)
+
+  categoryId  String?
+  categoryRef Category? @relation(fields: [categoryId], references: [id])
+
+  unit     String @default("unidad")
+  cost     Float  @default(0)
+  price    Float  @default(0)
+
+  // Configuración de reposición (por producto)
+  stockMin     Int @default(0)
+  leadTimeDays Int @default(3)  // días que tarda el proveedor
+  coverageDays Int @default(14) // días que querés cubrir (post-llegada)
+  safetyStock  Int @default(0)  // unidades extra (colchón)
+
+  currentStock Int @default(0)
 
   storeId String
-  store   Store  @relation(fields: [storeId], references: [id])
+  store   Store @relation(fields: [storeId], references: [id])
 
   supplierId String?
   supplier   Supplier? @relation(fields: [supplierId], references: [id])
 
-  movements InventoryMovement[]
+  movements          InventoryMovement[]
+  purchaseOrderItems PurchaseOrderItem[]
+
+  // Ventas importadas
+  ticketLines TicketLine[]
+
+  // Alias para matcheo desde POS
+  aliases ProductAlias[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([storeId])
   @@index([supplierId])
+  @@index([categoryId])
 }
 
+model ProductAlias {
+  id String @id @default(cuid())
+
+  // CODE: código/sku/barcode del POS
+  // NAME: nombre normalizado del POS
+  kind String
+  key  String
+
+  storeId String
+  store   Store @relation(fields: [storeId], references: [id])
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([storeId, kind, key])
+  @@index([storeId])
+  @@index([productId])
+}
+
+model Category {
+  id    String @id @default(cuid())
+  scope String // PRODUCT | SUPPLIER | ORDER | TICKET | ...
+  name  String
+  slug  String
+  color String?
+  icon  String?
+
+  storeId String
+  store   Store @relation(fields: [storeId], references: [id])
+
+  // relaciones por ámbito (por ahora: Productos)
+  products Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([storeId, scope, slug])
+  @@index([storeId])
+  @@index([scope])
+}
+
+
 model InventoryMovement {
-  id   String       @id @default(cuid())
-  type MovementType
+  id String @id @default(cuid())
+
+  // SQLite no soporta enums en Prisma: guardamos el tipo como string validado en la app (IN | OUT | ADJUST).
+  type String
   qty  Int
   note String?
 
@@ -75,4 +150,161 @@ model InventoryMovement {
 
   @@index([productId])
   @@index([storeId])
+}
+
+model PurchaseDraft {
+  id        String   @id @default(cuid())
+  title     String   @default("Borrador")
+  message   String
+  csv       String
+  itemCount Int      @default(0)
+  createdAt DateTime @default(now())
+
+  storeId String
+  store   Store @relation(fields: [storeId], references: [id])
+
+  supplierId String?
+  supplier   Supplier? @relation(fields: [supplierId], references: [id])
+
+  @@index([storeId])
+  @@index([supplierId])
+
+}
+
+model PurchaseOrder {
+  id        String   @id @default(cuid())
+  title     String   @default("Orden de compra")
+  status    String   @default("DRAFT") // DRAFT | SENT | PARTIAL | RECEIVED | CANCELED
+  notes     String?
+
+  storeId String
+  store   Store @relation(fields: [storeId], references: [id])
+
+  supplierId String?
+  supplier   Supplier? @relation(fields: [supplierId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  receivedAt DateTime?
+
+  items PurchaseOrderItem[]
+
+  @@index([storeId])
+  @@index([supplierId])
+
+}
+
+model PurchaseOrderItem {
+  id String @id @default(cuid())
+
+  orderId String
+  order   PurchaseOrder @relation(fields: [orderId], references: [id])
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  qtyOrdered  Int
+  qtyReceived Int @default(0)
+
+  unitCost Float?
+  note     String?
+
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model TicketImportBatch {
+  id        String   @id @default(cuid())
+  source    String   @default("CSV")
+  fileName  String?
+  notes     String?
+
+  ticketsCount    Int @default(0)
+  linesCount      Int @default(0)
+  movementsCount  Int @default(0)
+  skippedCount    Int @default(0)
+  duplicatesCount Int @default(0)
+  errorCount      Int @default(0)
+  unmatchedLines  Int @default(0)
+
+  storeId String
+  store   Store @relation(fields: [storeId], references: [id])
+
+  importedAt DateTime @default(now())
+
+  tickets Ticket[]
+
+  @@index([storeId])
+}
+
+model Ticket {
+  id String @id @default(cuid())
+
+  storeId String
+  store   Store @relation(fields: [storeId], references: [id])
+
+  batchId String?
+  batch   TicketImportBatch? @relation(fields: [batchId], references: [id])
+
+  externalId String?
+  issuedAt   DateTime?
+  total      Float?
+
+  // hash para evitar duplicados incluso si no hay externalId
+  hash String
+
+  createdAt DateTime @default(now())
+
+  lines TicketLine[]
+
+  @@index([storeId])
+  @@index([batchId])
+  @@unique([storeId, hash])
+}
+
+model TicketLine {
+  id String @id @default(cuid())
+
+  ticketId String
+  ticket   Ticket @relation(fields: [ticketId], references: [id])
+
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id])
+
+  // datos crudos desde el POS
+  sku       String?
+  name      String?
+  qty       Int
+  unitPrice Float?
+  lineTotal Float?
+
+  matchedBy  String? // ALIAS_CODE | ALIAS_NAME | SKU | NAME | MANUAL
+  resolvedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([ticketId])
+  @@index([productId])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  storeId   String
+  store     Store     @relation(fields: [storeId], references: [id])
+
+  role      String
+  action    String
+  entity    String?
+  entityId  String?
+  payload   String?
+  ip        String?
+  userAgent String?
+
+  createdAt DateTime @default(now())
+
+  @@index([storeId])
+  @@index([action])
+  @@index([createdAt])
 }

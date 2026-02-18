@@ -13,7 +13,7 @@ export default async function StockPage() {
         </p>
       </div>
 
-      <StockIntelligence storeId={store.id} />
+      <StockIntelligence storeId={store.id} storeName={store.name} />
     </div>
   );
 }

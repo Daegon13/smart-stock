@@ -7,6 +7,7 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
   const storeId = body?.storeId || "";
   const question = body?.question || "";
+  const model = typeof body?.model === "string" ? body.model : undefined;
 
   if (!storeId) return NextResponse.json({ error: "storeId requerido" }, { status: 400 });
   if (!question) return NextResponse.json({ error: "question requerida" }, { status: 400 });
@@ -65,7 +66,8 @@ export async function POST(req: Request) {
     messages: [
       { role: "system", content: system },
       { role: "user", content: user }
-    ]
+    ],
+    model
   });
 
   // Fallback sin IA: devolvemos una respuesta básica.
@@ -78,7 +80,8 @@ export async function POST(req: Request) {
 
   return NextResponse.json({
     usedAI: ai.usedAI,
-    answer: ai.usedAI && ai.text ? ai.text : fallback,
-    context
+    answer: ai.usedAI ? (ai.text || "(Respuesta vacía)") : ai.text ? `${ai.text}\n\n${fallback}` : fallback,
+    context,
+    modelUsed: model || process.env.OPENAI_MODEL || "gpt-5"
   });
 }
