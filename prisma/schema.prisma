@@ -3,8 +3,11 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // Use a *direct/non-pooling* connection for Prisma CLI operations (db push/migrate).
+  // In Vercel + Supabase integration, you can set DIRECT_URL = POSTGRES_URL_NON_POOLING.
+  directUrl = env("DIRECT_URL")
 }
 
 model Store {

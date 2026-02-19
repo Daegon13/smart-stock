@@ -1,33 +1,43 @@
 #!/usr/bin/env node
 /**
- * Switch Prisma datasource provider to PostgreSQL in-place.
- * Safe: only rewrites the `datasource db { ... }` block, keeps models intact.
+ * Switch Prisma datasource to PostgreSQL.
+ * Adds DIRECT_URL support for Supabase/Vercel (non-pooling direct connection),
+ * which Prisma uses for schema push/migrations.
  */
-import fs from "node:fs";
-import path from "node:path";
+import fs from 'node:fs';
+import path from 'node:path';
 
-const schemaPath = path.join(process.cwd(), "prisma", "schema.prisma");
+const schemaPath = path.join(process.cwd(), 'prisma', 'schema.prisma');
+
 if (!fs.existsSync(schemaPath)) {
-  console.error(`❌ prisma/schema.prisma not found at ${schemaPath}`);
+  console.error('❌ prisma/schema.prisma not found. Run this from repo root.');
   process.exit(1);
 }
 
-const src = fs.readFileSync(schemaPath, "utf8");
+let schema = fs.readFileSync(schemaPath, 'utf8');
 
-// Match datasource db block (naive but practical)
-const reBlock = /datasource\s+db\s*\{[\s\S]*?\}/m;
-if (!reBlock.test(src)) {
-  console.error("❌ Could not find `datasource db { ... }` block in prisma/schema.prisma");
-  process.exit(1);
-}
+const datasourceRegex = /datasource\s+db\s*\{[\s\S]*?\n\}/m;
 
-const target = `datasource db {\n  provider = "postgresql"\n  url      = env("DATABASE_URL")\n}`;
+const newDatasource = `datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // Use a *direct/non-pooling* connection for Prisma CLI operations (db push/migrate).
+  // In Vercel + Supabase integration, you can set DIRECT_URL = POSTGRES_URL_NON_POOLING.
+  directUrl = env("DIRECT_URL")
+}`;
 
-const next = src.replace(reBlock, target);
-
-if (next === src) {
-  console.log("ℹ️ Prisma datasource already set (no changes).");
+if (datasourceRegex.test(schema)) {
+  schema = schema.replace(datasourceRegex, newDatasource);
 } else {
-  fs.writeFileSync(schemaPath, next, "utf8");
-  console.log("✅ Updated Prisma datasource to PostgreSQL.");
+  // If datasource block is missing, prepend it.
+  schema = `${newDatasource}\n\n${schema}`;
 }
+
+// Ensure generator client exists (some repos keep it, but this is safe)
+const generatorRegex = /generator\s+client\s*\{[\s\S]*?\n\}/m;
+if (!generatorRegex.test(schema)) {
+  schema = `generator client {\n  provider = \"prisma-client-js\"\n}\n\n${schema}`;
+}
+
+fs.writeFileSync(schemaPath, schema, 'utf8');
+console.log('✅ Updated Prisma datasource to PostgreSQL (with DIRECT_URL support).');
