@@ -67,7 +67,7 @@ export function AliasManager({ storeId }: { storeId: string }) {
         setProducts([]);
       }
     })();
-  }, [storeId]);
+  }, [storeId, createProductId]);
 
   async function createAlias() {
     setErr(null);

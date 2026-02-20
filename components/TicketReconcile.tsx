@@ -424,6 +424,9 @@ function ReconcileCard({
                         line,
                         productId: selected,
                         applyToSameCode: applyAll,
+                        applyToSameName: applySameName,
+                        applyToNameFamily: applyFamily,
+                        familyKey,
                         saveCodeAlias: saveCode,
                         saveNameAlias: saveName
                       })

@@ -1,5 +1,11 @@
-type ResponsesAPIMessage = {
-  role: "system" | "user" | "assistant";
+// NOTE:
+// The Responses API supports a "developer" role in addition to "system", "user" and "assistant".
+// We keep this union here so our helpers can accept the same messages we send to /v1/responses.
+// Docs: https://platform.openai.com/docs/api-reference/responses
+export type OpenAIRole = "system" | "developer" | "user" | "assistant";
+
+export type ResponsesAPIMessage = {
+  role: OpenAIRole;
   content: string;
 };
 
@@ -68,7 +74,7 @@ export async function createOpenAITextResponse(args: {
 export type JSONSchema = any;
 
 export async function createOpenAIJSONResponse<T = any>(args: {
-  messages: Array<{ role: "system" | "developer" | "user" | "assistant"; content: string }>;
+  messages: ResponsesAPIMessage[];
   schema: JSONSchema;
   model?: string;
 }): Promise<{ usedAI: boolean; parsed: T | null; text?: string; error?: string }>

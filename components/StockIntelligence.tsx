@@ -177,7 +177,7 @@ export function StockIntelligence({ storeId, storeName }: { storeId: string; sto
       .map((g) => {
         const chosen = g.items
           .filter((i) => selected[i.productId] && i.suggestedQty > 0)
-          .map((i) => ({ sku: i.sku ?? null, name: i.name, qty: i.suggestedQty, unit: i.unit ?? "" }));
+          .map((i) => ({ productId: i.productId, sku: i.sku ?? null, name: i.name, qty: i.suggestedQty, unit: i.unit ?? "" }));
 
         return {
           ...g,
@@ -306,7 +306,7 @@ export function StockIntelligence({ storeId, storeName }: { storeId: string; sto
                                 supplierId: g.supplierId,
                                 title: `OC - ${g.supplierName} - ${new Date().toLocaleDateString()}`,
                                 notes: "Generada desde Stock Inteligente",
-                                items: g.chosen.map((c) => ({ productId: c.productId, qtyOrdered: c.suggestedQty }))
+                                items: g.chosen.map((c) => ({ productId: c.productId, qtyOrdered: c.qty }))
                               })
                             });
                             setOrderBySupplier((m) => ({ ...m, [g.key]: res.order.id }));

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { getOrCreateDefaultStore } from "@/lib/defaultStore";
 
@@ -77,7 +78,9 @@ export async function importTabular(opts: {
   // Cache suppliers by normalized name
   const supplierCache = new Map<string, { id: string }>();
 
-  const ensureSupplier = async (tx: typeof prisma, nameRaw: string) => {
+  // NOTE: inside prisma.$transaction callback, `tx` is a TransactionClient (not the full PrismaClient)
+  // so helpers must accept Prisma.TransactionClient to keep TS happy.
+  const ensureSupplier = async (tx: Prisma.TransactionClient, nameRaw: string) => {
     const name = String(nameRaw ?? "").trim();
     if (!name) return null;
     const key = name.toLowerCase();

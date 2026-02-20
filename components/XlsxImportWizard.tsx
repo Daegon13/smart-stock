@@ -181,12 +181,11 @@ export function XlsxImportWizard({ storeId }: { storeId: string }) {
       setBusy(false);
       setError(e?.message || "No se pudo leer el Excel");
     }
-  }, [fileBase64, sheetName, hasHeader, parseOnServer]);
+  }, [fileBase64, sheetName, hasHeader, parseOnServer, mappingTouched]);
 
   React.useEffect(() => {
-    if (step >= 2) reparse();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sheetName, hasHeader]);
+    if (step >= 2) void reparse();
+  }, [step, reparse]);
 
   const applySmartGuess = () => {
     const guess = guessMappingSmart(headers, rows);

@@ -116,16 +116,16 @@
 
         {resp && (
           <Card>
-            <CardHeader
-              title={
-                <div className="flex flex-wrap items-center gap-2">
-                  <span>Respuesta</span>
-                  <Badge tone={resp.usedAI ? "green" : "amber"}>{resp.usedAI ? "IA activa" : "Fallback"}</Badge>
-                  <Badge tone="slate">{resp.modelUsed}</Badge>
-                </div>
-              }
-              subtitle="Si ves acciones sugeridas, podés ejecutarlas. En demo, esto es lo que más vende."
-            />
+            <CardHeader>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-base font-semibold leading-none tracking-tight">Respuesta</span>
+                <Badge tone={resp.usedAI ? "green" : "amber"}>{resp.usedAI ? "IA activa" : "Fallback"}</Badge>
+                <Badge tone="slate">{resp.modelUsed}</Badge>
+              </div>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Si ves acciones sugeridas, podés ejecutarlas. En demo, esto es lo que más vende.
+              </p>
+            </CardHeader>
             <CardContent className="space-y-4">
               <div className="whitespace-pre-wrap text-sm text-slate-800">{resp.message}</div>
 

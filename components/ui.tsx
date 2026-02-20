@@ -57,15 +57,19 @@ export function Button(props: ButtonProps) {
   );
 }
 
-export function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
-  const { className = "", ...rest } = props;
-  return (
-    <input
-      className={`w-full rounded-md border border-slate-300 bg-white/80 px-3 py-2 text-sm outline-none backdrop-blur focus:ring-2 focus:ring-indigo-400 ${className}`}
-      {...rest}
-    />
-  );
-}
+export const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
+  function Input({ className = "", ...rest }, ref) {
+    return (
+      <input
+        ref={ref}
+        className={`w-full rounded-md border border-slate-300 bg-white/80 px-3 py-2 text-sm outline-none backdrop-blur focus:ring-2 focus:ring-indigo-400 ${className}`}
+        {...rest}
+      />
+    );
+  }
+);
+
+Input.displayName = "Input";
 
 export function Textarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
   const { className = "", ...rest } = props;

@@ -116,7 +116,7 @@ export function CsvImportWizard({ storeId }: { storeId: string }) {
       setSuggestConfidence(guess.confidence);
       setSuggestNotes(["Sugerencia automática actualizada.", ...guess.notes]);
     }
-  }, [csvText, delimiter, hasHeader]);
+  }, [csvText, delimiter, hasHeader, mappingTouched]);
 
   React.useEffect(() => {
     reparse();
