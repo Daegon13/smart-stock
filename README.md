@@ -1,19 +1,20 @@
-# Patch 05 — Importador CSV (Wizard + API)
+# Patch 19 — Fix Vercel build (reviewDays -> coverageDays)
 
-## Qué agrega
-- Página **/import** con wizard de 3 pasos: subir CSV → mapear columnas → previsualizar e importar.
-- Endpoint **POST /api/import/csv** que crea/actualiza productos y registra un movimiento **ADJUST** si viene stock.
-- Link "Importar CSV" en el menú lateral.
+## Qué arregla
+- El deploy en Vercel se caía por un error de TypeScript:
+  `reviewDays` no existe en el type `StockAlgoOptions`.
+- `computeSuggestions()` usa `coverageDays` (días a cubrir hasta la próxima reposición).
 
 ## Cómo aplicar
-1) Copiá/pegá el contenido del ZIP en la raíz del repo (sobrescribe archivos si te lo pide).
-2) Reiniciá el dev server:
-   - `npm run dev`
-3) Ir a **/import**.
+Copiá y reemplazá este archivo en tu repo:
 
-## Notas
-- MVP: importa hasta **2000 filas** por ejecución.
-- Upsert:
-  - Si hay SKU → intenta matchear por SKU.
-  - Si no hay SKU → intenta matchear por Nombre.
-- Si mapeás Stock, se crea un movimiento **ADJUST** con nota "Import CSV".
+- `app/api/ai/assistant/route.ts`
+
+Luego:
+
+```bash
+npm install
+npm run build
+```
+
+Y reintentá el deploy en Vercel.
