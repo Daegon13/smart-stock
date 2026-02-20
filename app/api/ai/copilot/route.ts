@@ -134,7 +134,7 @@ export async function POST(req: Request) {
       pendingOrders
     },
     urgent: urgent.map((u) => ({
-      productId: u.id,
+      productId: u.productId,
       name: u.name,
       current: u.currentStock,
       min: u.stockMin,
