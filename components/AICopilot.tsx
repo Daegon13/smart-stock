@@ -79,7 +79,10 @@
       <div className="space-y-6">
         <Card className="overflow-hidden">
           <div className="h-1 w-full bg-gradient-to-r from-indigo-600 to-fuchsia-600" />
-          <CardHeader title="Copiloto IA (operaciones)" subtitle="Pedile que arme pedidos, detecte problemas y te prepare acciones listas para ejecutar (con revisión)." />
+          <CardHeader>
+            <h3 className="text-xl font-semibold leading-none tracking-tight">Copiloto IA (operaciones)</h3>
+            <p className="text-sm text-muted-foreground">Pedile que arme pedidos, detecte problemas y te prepare acciones listas para ejecutar (con revisión).</p>
+          </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex flex-col gap-2 md:flex-row md:items-center">
               <div className="flex-1">

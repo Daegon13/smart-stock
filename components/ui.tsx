@@ -1,4 +1,5 @@
 import * as React from "react";
+import type { ReactNode, HTMLAttributes } from "react";
 
 type ButtonVariant = "primary" | "ghost" | "outline" | "soft";
 type ButtonSize = "sm" | "md" | "lg";
@@ -192,4 +193,13 @@ export function CardHeader(props: React.HTMLAttributes<HTMLDivElement>) {
 export function CardContent(props: React.HTMLAttributes<HTMLDivElement>) {
   const { className = "", ...rest } = props;
   return <div className={`p-4 ${className}`} {...rest} />;
+}
+
+
+export function CardTitle({ className = "", ...props }: HTMLAttributes<HTMLHeadingElement>) {
+  return <h3 className={"text-base font-semibold leading-none tracking-tight " + className} {...props} />;
+}
+
+export function CardDescription({ className = "", ...props }: HTMLAttributes<HTMLParagraphElement>) {
+  return <p className={"text-sm text-muted-foreground " + className} {...props} />;
 }

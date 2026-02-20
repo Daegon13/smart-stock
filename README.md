@@ -1,20 +1,20 @@
-# Patch 19 — Fix Vercel build (reviewDays -> coverageDays)
+# Patch 23 — Fix TS error en demo seed (suppliers any[])
 
 ## Qué arregla
-- El deploy en Vercel se caía por un error de TypeScript:
-  `reviewDays` no existe en el type `StockAlgoOptions`.
-- `computeSuggestions()` usa `coverageDays` (días a cubrir hasta la próxima reposición).
+En `app/api/demo/seed/route.ts` TypeScript falla en build porque `const suppliers = []` se infiere como `any[]` (y en modo estricto Next falla el build).
 
 ## Cómo aplicar
-Copiá y reemplazá este archivo en tu repo:
-
-- `app/api/ai/assistant/route.ts`
-
-Luego:
+1) Descomprimí el zip en la raíz del repo.
+2) Ejecutá:
 
 ```bash
-npm install
-npm run build
+node scripts/apply-patch-23.mjs
 ```
 
-Y reintentá el deploy en Vercel.
+3) Corré el build que usás para Vercel:
+
+```bash
+npm run vercel-build
+```
+
+Si compila, commiteá y pusheá.

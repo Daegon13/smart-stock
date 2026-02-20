@@ -86,6 +86,7 @@ export async function POST(req: Request) {
   const results: Array<{ action: string; ok: boolean; detail?: any; error?: string }> = [];
 
   for (const a of actions) {
+    const actionType = typeof (a as any)?.type === "string" ? (a as any).type : "unknown";
     if (a.type === "none") continue;
 
     try {
@@ -261,9 +262,9 @@ export async function POST(req: Request) {
         continue;
       }
 
-      results.push({ action: a.type, ok: false, error: "Acción no soportada" });
+      results.push({ action: actionType, ok: false, error: "Acción no soportada" });
     } catch (e: any) {
-      results.push({ action: a.type, ok: false, error: e?.message || "Error ejecutando acción" });
+      results.push({ action: actionType, ok: false, error: e?.message || "Error ejecutando acción" });
     }
   }
 

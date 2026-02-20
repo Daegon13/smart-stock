@@ -1,3 +1,4 @@
+import type { Supplier } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getOrCreateDefaultStore } from "@/lib/defaultStore";
@@ -71,7 +72,7 @@ export async function POST() {
     "Almacén Mayorista Central"
   ];
 
-  const suppliers = [];
+  const suppliers: Supplier[] = [];
   for (const name of supplierNames) {
     suppliers.push(
       await prisma.supplier.create({
