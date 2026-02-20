@@ -7,7 +7,7 @@
     "build": "prisma generate && prisma db push && npm run db:seed:maybe && next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "prisma generate",
+    "postinstall": "node scripts/prisma-generate-safe.mjs",
     "setup": "npm run prisma:generate && npm run db:push && npm run db:seed",
     "prisma:generate": "prisma generate",
     "db:push": "npm run use:postgres && prisma db push",

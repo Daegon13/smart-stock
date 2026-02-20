@@ -28,7 +28,6 @@ export async function POST(req: Request) {
   const suggestions = computeSuggestions(products as any, movements as any, {
     lookbackDays: 30,
     leadTimeDays: 3,
-    safetyDays: 4,
     reviewDays: 7
   });
 
