@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+
 import { prisma } from "@/lib/db";
 import { computeSuggestions, buildPurchaseMessage } from "@/lib/stock";
 import { createOpenAITextResponse } from "@/lib/openai";
@@ -9,30 +10,54 @@ export async function POST(req: Request) {
   const question = body?.question || "";
   const model = typeof body?.model === "string" ? body.model : undefined;
 
-  if (!storeId) return NextResponse.json({ error: "storeId requerido" }, { status: 400 });
-  if (!question) return NextResponse.json({ error: "question requerida" }, { status: 400 });
+  if (!storeId) {
+    return NextResponse.json({ error: "storeId requerido" }, { status: 400 });
+  }
+  if (!question) {
+    return NextResponse.json({ error: "question requerida" }, { status: 400 });
+  }
 
   const store = await prisma.store.findUnique({ where: { id: storeId } });
-  if (!store) return NextResponse.json({ error: "storeId inválido" }, { status: 400 });
+  if (!store) {
+    return NextResponse.json({ error: "storeId inválido" }, { status: 400 });
+  }
 
   const products = await prisma.product.findMany({
     where: { storeId },
-    select: { id: true, name: true, unit: true, cost: true, price: true, stockMin: true, currentStock: true, supplierId: true, category: true }
+    select: {
+      id: true,
+      name: true,
+      unit: true,
+      cost: true,
+      price: true,
+      stockMin: true,
+      currentStock: true,
+      supplierId: true,
+      category: true,
+    },
   });
 
   const movements = await prisma.inventoryMovement.findMany({
     where: { storeId },
-    select: { productId: true, type: true, qty: true, createdAt: true }
+    select: { productId: true, type: true, qty: true, createdAt: true },
   });
 
+  // NOTE:
+  // computeSuggestions() usa `coverageDays` (no `reviewDays`).
+  // `coverageDays` = cuántos días querés cubrir hasta la próxima reposición/revisión.
   const suggestions = computeSuggestions(products as any, movements as any, {
     lookbackDays: 30,
     leadTimeDays: 3,
-    reviewDays: 7
+    coverageDays: 7,
   });
 
-  const urgent = suggestions.filter((s) => s.severity !== "ok").slice(0, 12);
-  const purchaseDraft = buildPurchaseMessage(urgent.map((u) => ({ name: u.name, qty: u.suggestedQty })));
+  const urgent = suggestions
+    .filter((s) => s.severity !== "ok")
+    .slice(0, 12);
+
+  const purchaseDraft = buildPurchaseMessage(
+    urgent.map((u) => ({ name: u.name, qty: u.suggestedQty }))
+  );
 
   const context = {
     store: store.name,
@@ -40,7 +65,7 @@ export async function POST(req: Request) {
     kpis: {
       products: products.length,
       low: suggestions.filter((s) => s.severity === "low").length,
-      soon: suggestions.filter((s) => s.severity === "soon").length
+      soon: suggestions.filter((s) => s.severity === "soon").length,
     },
     urgent: urgent.map((u) => ({
       name: u.name,
@@ -49,24 +74,28 @@ export async function POST(req: Request) {
       avgDailyOut: u.avgDailyOut,
       daysCover: u.daysCover,
       suggested: u.suggestedQty,
-      reason: u.reason
+      reason: u.reason,
     })),
-    purchaseDraft
+    purchaseDraft,
   };
 
   const system =
-    "Sos un asistente de operaciones para un minimarket uruguayo. " +
+    "Sos un asistente de operaciones para un minimarket uruguayo.\n" +
     "Respondé en español, corto y accionable. " +
     "No inventes datos: usá solo lo que está en el contexto JSON.";
 
-  const user = `Pregunta del usuario: ${question}\n\nContexto JSON (datos reales):\n${JSON.stringify(context, null, 2)}`;
+  const user = `Pregunta del usuario: ${question}\n\nContexto JSON (datos reales):\n${JSON.stringify(
+    context,
+    null,
+    2
+  )}`;
 
   const ai = await createOpenAITextResponse({
     messages: [
       { role: "system", content: system },
-      { role: "user", content: user }
+      { role: "user", content: user },
     ],
-    model
+    model,
   });
 
   // Fallback sin IA: devolvemos una respuesta básica.
@@ -79,8 +108,12 @@ export async function POST(req: Request) {
 
   return NextResponse.json({
     usedAI: ai.usedAI,
-    answer: ai.usedAI ? (ai.text || "(Respuesta vacía)") : ai.text ? `${ai.text}\n\n${fallback}` : fallback,
+    answer: ai.usedAI
+      ? ai.text || "(Respuesta vacía)"
+      : ai.text
+        ? `${ai.text}\n\n${fallback}`
+        : fallback,
     context,
-    modelUsed: model || process.env.OPENAI_MODEL || "gpt-5"
+    modelUsed: model || process.env.OPENAI_MODEL || "gpt-5",
   });
 }
