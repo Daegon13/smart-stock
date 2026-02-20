@@ -1,5 +1,6 @@
 import { getOrCreateDefaultStore } from "@/lib/defaultStore";
 import { AIAssistant } from "@/components/AIAssistant";
+import { Suspense } from "react";
 
 export default async function AssistantPage() {
   const store = await getOrCreateDefaultStore();
@@ -11,7 +12,13 @@ export default async function AssistantPage() {
         <p className="mt-1 text-sm text-slate-600">Local: {store.name}</p>
       </div>
 
-      <AIAssistant storeId={store.id} />
+      {/*
+        Next.js requires useSearchParams() to be rendered within a Suspense boundary
+        when used in client components under a server-rendered page.
+      */}
+      <Suspense fallback={<div className="rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-600">Cargando asistente…</div>}>
+        <AIAssistant storeId={store.id} />
+      </Suspense>
     </div>
   );
 }
