@@ -35,7 +35,7 @@ export default async function DashboardPage() {
   const topUrgent = suggestions.filter((s) => s.severity !== "ok").slice(0, 5);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-tour="dashboard">
       {/* Hero */}
       <Card className="overflow-hidden">
         <div className="h-1 w-full bg-gradient-to-r from-indigo-600 to-fuchsia-600" />
