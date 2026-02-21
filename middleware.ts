@@ -14,26 +14,48 @@ function isPublicPath(pathname: string) {
   return false;
 }
 
+function getOrCreateRequestId(req: NextRequest) {
+  return req.headers.get("x-request-id") || crypto.randomUUID();
+}
+
+function nextWithRequestId(req: NextRequest, requestId: string) {
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-request-id", requestId);
+
+  const res = NextResponse.next({
+    request: {
+      headers: requestHeaders
+    }
+  });
+
+  res.headers.set("x-request-id", requestId);
+  return res;
+}
+
 export async function middleware(req: NextRequest) {
+  const requestId = getOrCreateRequestId(req);
   const password = process.env.BETA_PASSWORD;
   const secret = process.env.BETA_SECRET;
 
   // Si no está configurado, no aplicamos gate (modo demo/dev).
-  if (!password || !secret) return NextResponse.next();
+  if (!password || !secret) return nextWithRequestId(req, requestId);
 
-  const { pathname } = req.nextUrl;
-  if (isPublicPath(pathname)) return NextResponse.next();
+  const { pathname, search } = req.nextUrl;
+  if (isPublicPath(pathname)) return nextWithRequestId(req, requestId);
 
   const token = req.cookies.get("ss_beta")?.value || "";
   const ok = token ? await validateBetaToken(secret, token) : false;
 
-  if (ok) return NextResponse.next();
+  if (ok) return nextWithRequestId(req, requestId);
 
   const url = req.nextUrl.clone();
   url.pathname = "/login";
   // guardamos destino para volver después
-  url.searchParams.set("next", pathname);
-  return NextResponse.redirect(url);
+  url.searchParams.set("next", `${pathname}${search}`);
+
+  const res = NextResponse.redirect(url);
+  res.headers.set("x-request-id", requestId);
+  return res;
 }
 
 export const config = {
