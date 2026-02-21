@@ -2,8 +2,7 @@ const encoder = new TextEncoder();
 
 function base64FromBytes(bytes: Uint8Array) {
   // Node
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const B: any = (globalThis as any).Buffer;
+  const B = (globalThis as { Buffer?: { from(input: Uint8Array): { toString(encoding: "base64"): string } } }).Buffer;
   if (typeof B !== "undefined") return B.from(bytes).toString("base64");
 
   // Edge / browser

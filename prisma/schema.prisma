@@ -244,6 +244,7 @@ model TicketImportBatch {
   importedAt DateTime @default(now())
 
   tickets Ticket[]
+  movements InventoryMovement[]
 
   @@index([storeId])
 }
