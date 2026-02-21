@@ -5,7 +5,7 @@ export default async function ImportPage() {
   const store = await getOrCreateDefaultStore();
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-tour="import">
       <div>
         <h1 className="text-2xl font-semibold text-slate-900">Importar</h1>
         <p className="mt-1 text-sm text-slate-600">

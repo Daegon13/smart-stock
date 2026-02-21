@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { computeSuggestions } from "@/lib/stock";
 import { createOpenAIJSONResponse } from "@/lib/openai";
+import { enforceRateLimit } from "@/lib/rateLimit";
 
 const OutputSchema = {
   type: "object",
@@ -75,6 +76,9 @@ const OutputSchema = {
 };
 
 export async function POST(req: Request) {
+  const limit = enforceRateLimit({ req, route: "/api/ai/copilot", maxRequests: 30, windowMs: 60_000 });
+  if (!limit.ok) return limit.response;
+
   const body = await req.json().catch(() => null);
   const storeId = body?.storeId || "";
   const question = body?.question || "";
@@ -82,6 +86,7 @@ export async function POST(req: Request) {
 
   if (!storeId) return NextResponse.json({ error: "storeId requerido" }, { status: 400 });
   if (!question) return NextResponse.json({ error: "question requerida" }, { status: 400 });
+  if (String(question).length > 2000) return NextResponse.json({ error: "question demasiado larga (máx 2000 caracteres)" }, { status: 400 });
 
   const store = await prisma.store.findUnique({ where: { id: storeId } });
   if (!store) return NextResponse.json({ error: "storeId inválido" }, { status: 400 });

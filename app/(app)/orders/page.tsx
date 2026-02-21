@@ -26,7 +26,7 @@ export default async function OrdersPage() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-tour="orders">
       <Card className="overflow-hidden">
         <div className="h-1 w-full bg-gradient-to-r from-emerald-600 to-indigo-600" />
         <CardContent className="p-5 md:p-6">
