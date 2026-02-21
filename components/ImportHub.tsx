@@ -6,6 +6,7 @@ import { CsvImportWizard } from "@/components/CsvImportWizard";
 import { XlsxImportWizard } from "@/components/XlsxImportWizard";
 import { ImportTemplates } from "@/components/ImportTemplates";
 import { TicketImportWizard } from "@/components/TicketImportWizard";
+import { ImportBatchesCard } from "@/components/ImportBatchesCard";
 
 export function ImportHub({ storeId }: { storeId: string }) {
   const [tab, setTab] = React.useState<"csv" | "xlsx" | "tickets">("xlsx");
@@ -77,6 +78,8 @@ export function ImportHub({ storeId }: { storeId: string }) {
       ) : (
         <TicketImportWizard storeId={storeId} />
       )}
+
+      <ImportBatchesCard storeId={storeId} />
     </div>
   );
 }

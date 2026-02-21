@@ -149,10 +149,16 @@ model InventoryMovement {
   storeId String
   store   Store @relation(fields: [storeId], references: [id])
 
+  // Si el movimiento fue generado por una importación de tickets,
+  // lo linkeamos al lote para poder auditar y (si no hay movimientos posteriores) deshacer.
+  importBatchId String?
+  importBatch   TicketImportBatch? @relation(fields: [importBatchId], references: [id])
+
   createdAt DateTime @default(now())
 
   @@index([productId])
   @@index([storeId])
+  @@index([importBatchId])
 }
 
 model PurchaseDraft {

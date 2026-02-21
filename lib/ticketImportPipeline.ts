@@ -389,6 +389,7 @@ export async function importTicketsTabular(opts: {
         data: {
           storeId,
           productId,
+          importBatchId: batch.id,
           type: "OUT",
           qty: info.qty,
           note: info.notes.join(" · ")

@@ -30,6 +30,15 @@ Project → **Settings → Environment Variables**:
 - `OPENAI_MODEL` (opcional)
 - `SEED_DEMO` (opcional, `true` para cargar demo al deploy)
 
+### Recomendado: Beta gate (para no dejar el panel abierto)
+
+- `BETA_PASSWORD` — clave para entrar al panel.
+- `BETA_SECRET` — secreto HMAC para firmar el cookie (cualquier string largo).
+
+### Seguridad demo
+
+- `ALLOW_DEMO_SEED=true` (solo si querés habilitar el endpoint `/api/demo/seed` en producción)
+
 ---
 
 ## 3) Build settings
@@ -65,3 +74,17 @@ npm run dev:pg
 
 ## Nota sobre `db push`
 Para MVP va perfecto. Para clientes reales: migraciones con `prisma migrate`.
+
+### Migraciones (cuando cambia Prisma)
+
+Si aplicás un patch que toca `prisma/schema.prisma`, corré migraciones antes de desplegar:
+
+Local:
+```bash
+npx prisma migrate dev --name <nombre>
+```
+
+Producción (Vercel):
+```bash
+npx prisma migrate deploy
+```

@@ -274,9 +274,11 @@ export default async function DashboardPage() {
               </li>
             </ol>
 
-            <div className="mt-4 text-xs text-slate-500">
-              ID tienda (debug): <code className="rounded bg-white px-1">{store.id}</code>
-            </div>
+            {process.env.NODE_ENV !== "production" && (
+              <div className="mt-4 text-xs text-slate-500">
+                ID tienda (debug): <code className="rounded bg-white px-1">{store.id}</code>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

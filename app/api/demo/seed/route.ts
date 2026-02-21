@@ -47,6 +47,15 @@ function cfgByCategory(category: string | null) {
 }
 
 export async function POST() {
+  // Seguridad: el endpoint de seed demo NO debería estar disponible en producción.
+  // Para habilitarlo explícitamente (solo bajo tu responsabilidad), setear ALLOW_DEMO_SEED=true.
+  if (process.env.NODE_ENV === "production" && process.env.ALLOW_DEMO_SEED !== "true") {
+    return NextResponse.json(
+      { ok: false, message: "Seed demo deshabilitado en producción." } satisfies SeedResult,
+      { status: 403 }
+    );
+  }
+
   const store = await getOrCreateDefaultStore();
   const existing = await prisma.product.count({ where: { storeId: store.id } });
   if (existing > 0) {
