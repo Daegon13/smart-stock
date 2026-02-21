@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { getRequestId, logApiEvent } from "@/lib/observability";
 
 export const dynamic = "force-dynamic";
 
@@ -7,16 +8,32 @@ export async function POST(
   req: Request,
   { params }: { params: { id: string } }
 ) {
+  const requestId = getRequestId(req);
   const batchId = params.id;
   const body = await req.json().catch(() => null);
   const storeId = String(body?.storeId || "");
 
   if (!storeId) {
+    logApiEvent({
+      requestId,
+      route: `/api/import/batches/${batchId}/undo`,
+      method: "POST",
+      status: 400,
+      message: "missing storeId"
+    });
     return NextResponse.json({ ok: false, error: "storeId requerido" }, { status: 400 });
   }
 
   const batch = await prisma.ticketImportBatch.findUnique({ where: { id: batchId } });
   if (!batch || batch.storeId !== storeId) {
+    logApiEvent({
+      requestId,
+      route: `/api/import/batches/${batchId}/undo`,
+      method: "POST",
+      storeId,
+      status: 404,
+      message: "batch not found"
+    });
     return NextResponse.json({ ok: false, error: "Lote no encontrado" }, { status: 404 });
   }
 
@@ -27,12 +44,28 @@ export async function POST(
   });
 
   if (movements.length === 0) {
+    logApiEvent({
+      requestId,
+      route: `/api/import/batches/${batchId}/undo`,
+      method: "POST",
+      storeId,
+      status: 409,
+      message: "batch without movements"
+    });
     return NextResponse.json({ ok: false, error: "Este lote no tiene movimientos para deshacer." }, { status: 409 });
   }
 
   // Solo soportamos revertir lotes que generaron OUT/IN (tickets generan OUT)
   const bad = movements.find((m) => !["OUT", "IN"].includes(m.type));
   if (bad) {
+    logApiEvent({
+      requestId,
+      route: `/api/import/batches/${batchId}/undo`,
+      method: "POST",
+      storeId,
+      status: 409,
+      message: `invalid movement type: ${bad.type}`
+    });
     return NextResponse.json(
       { ok: false, error: `No se puede deshacer: movimiento tipo ${bad.type}.` },
       { status: 409 }
@@ -53,6 +86,14 @@ export async function POST(
   });
 
   if (later) {
+    logApiEvent({
+      requestId,
+      route: `/api/import/batches/${batchId}/undo`,
+      method: "POST",
+      storeId,
+      status: 409,
+      message: "blocked by newer movements"
+    });
     return NextResponse.json(
       {
         ok: false,
@@ -97,6 +138,15 @@ export async function POST(
 
     // 4) borrar lote
     await tx.ticketImportBatch.delete({ where: { id: batchId } });
+  });
+
+  logApiEvent({
+    requestId,
+    route: `/api/import/batches/${batchId}/undo`,
+    method: "POST",
+    storeId,
+    status: 200,
+    message: `undo ok (movements=${movements.length}, tickets=${tickets.length}, products=${deltaByProduct.size})`
   });
 
   return NextResponse.json({

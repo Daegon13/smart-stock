@@ -8,6 +8,16 @@ import { RoleSwitcher } from "@/components/RoleSwitcher";
 
 // Nota: algunos paths viejos quedaron por patches anteriores (pos/tickets/purchases/suppliers).
 // Los reemplazamos por los módulos reales del MVP para evitar 404 y dejar la demo prolija.
+
+const tourByPath: Record<string, string> = {
+  "/dashboard": "dashboard",
+  "/import": "import",
+  "/reconcile": "tickets",
+  "/stock": "stock",
+  "/orders": "orders",
+  "/movements": "movements"
+};
+
 const nav = [
   { href: "/dashboard", label: "Dashboard", icon: "📊" },
   { href: "/today", label: "Qué hacer hoy", icon: "✅" },
@@ -79,6 +89,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   <Link
                     key={item.href}
                     href={item.href}
+                    data-tour={tourByPath[item.href]}
                     className={[
                       "flex items-center justify-between rounded-xl px-3 py-2 text-sm transition",
                       active ? "bg-slate-900 text-white" : "text-slate-700 hover:bg-slate-100"
