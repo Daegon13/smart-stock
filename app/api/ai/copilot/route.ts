@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { computeSuggestions } from "@/lib/stock";
 import { createOpenAIJSONResponse } from "@/lib/openai";
 import { enforceRateLimit } from "@/lib/rateLimit";
+import { getRequestId, logApiEvent } from "@/lib/observability";
 
 const OutputSchema = {
   type: "object",
@@ -76,22 +77,39 @@ const OutputSchema = {
 };
 
 export async function POST(req: Request) {
+  const requestId = getRequestId(req);
   const limit = enforceRateLimit({ req, route: "/api/ai/copilot", maxRequests: 30, windowMs: 60_000 });
-  if (!limit.ok) return limit.response;
+  if (!limit.ok) {
+    logApiEvent({ requestId, route: "/api/ai/copilot", method: "POST", status: 429, message: "rate limited" });
+    return limit.response;
+  }
 
   const maxPromptLen = Number(process.env.MAX_PROMPT_LEN || "2000");
+  const json = (body: unknown, status = 200) => NextResponse.json(body, { status, headers: { "x-request-id": requestId } });
 
   const body = await req.json().catch(() => null);
   const storeId = body?.storeId || "";
   const question = body?.question || "";
   const model = typeof body?.model === "string" ? body.model : undefined;
 
-  if (!storeId) return NextResponse.json({ error: "storeId requerido" }, { status: 400 });
-  if (!question) return NextResponse.json({ error: "question requerida" }, { status: 400 });
-  if (String(question).length > maxPromptLen) return NextResponse.json({ error: `question demasiado larga (máx ${maxPromptLen} caracteres)` }, { status: 400 });
+  if (!storeId) {
+    logApiEvent({ requestId, route: "/api/ai/copilot", method: "POST", status: 400, message: "missing storeId" });
+    return json({ error: "storeId requerido" }, 400);
+  }
+  if (!question) {
+    logApiEvent({ requestId, route: "/api/ai/copilot", method: "POST", storeId, status: 400, message: "missing question" });
+    return json({ error: "question requerida" }, 400);
+  }
+  if (String(question).length > maxPromptLen) {
+    logApiEvent({ requestId, route: "/api/ai/copilot", method: "POST", storeId, status: 400, message: "question too long" });
+    return json({ error: `question demasiado larga (máx ${maxPromptLen} caracteres)` }, 400);
+  }
 
   const store = await prisma.store.findUnique({ where: { id: storeId } });
-  if (!store) return NextResponse.json({ error: "storeId inválido" }, { status: 400 });
+  if (!store) {
+    logApiEvent({ requestId, route: "/api/ai/copilot", method: "POST", storeId, status: 400, message: "invalid storeId" });
+    return json({ error: "storeId inválido" }, 400);
+  }
 
   // Contexto operativo (mínimo, pero vendible)
   const products = await prisma.product.findMany({
@@ -187,7 +205,9 @@ export async function POST(req: Request) {
   const message = ai.usedAI && ai.parsed?.message ? ai.parsed.message : fallback;
   const actions = ai.usedAI && Array.isArray(ai.parsed?.actions) ? ai.parsed.actions : [{ type: "none" }];
 
-  return NextResponse.json({
+  logApiEvent({ requestId, route: "/api/ai/copilot", method: "POST", storeId, status: 200, message: "ok" });
+
+  return json({
     usedAI: ai.usedAI,
     modelUsed: model || process.env.OPENAI_MODEL || "gpt-5",
     message,
