@@ -5,6 +5,7 @@ import { requirePermission } from "@/lib/rbac";
 import { writeAudit } from "@/lib/audit";
 import { normName } from "@/lib/posNormalize";
 import { enforceRateLimit } from "@/lib/rateLimit";
+import { getRequestId, logApiEvent } from "@/lib/observability";
 
 const ActionSchema = z.discriminatedUnion("type", [
   z.object({
@@ -67,25 +68,39 @@ function slugify(s: string) {
 }
 
 export async function POST(req: Request) {
-  const limit = enforceRateLimit({ req, route: "/api/ai/execute", maxRequests: 20, windowMs: 60_000 });
-  if (!limit.ok) return limit.response;
+  const requestId = getRequestId(req);
+  const json = (body: unknown, status = 200) => NextResponse.json(body, { status, headers: { "x-request-id": requestId } });
+
+  const limit = enforceRateLimit({ req, route: "/api/ai/execute", maxRequests: 20, windowMs: 60_000, requestId });
+  if (!limit.ok) {
+    logApiEvent({ requestId, route: "/api/ai/execute", method: "POST", status: 429, message: "rate limited" });
+    return limit.response;
+  }
 
   const perm = requirePermission(req, "ai:execute");
-  if (!perm.ok) return perm.response;
+  if (!perm.ok) {
+    logApiEvent({ requestId, route: "/api/ai/execute", method: "POST", status: 403, message: "permission denied ai:execute" });
+    return perm.response;
+  }
 
   const body = await req.json().catch(() => null);
   const parsed = BodySchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ ok: false, error: parsed.error.flatten() }, { status: 400 });
+    logApiEvent({ requestId, route: "/api/ai/execute", method: "POST", status: 400, message: "invalid payload" });
+    return json({ ok: false, error: parsed.error.flatten() }, 400);
   }
 
   const { storeId, actions } = parsed.data;
   if (actions.length > 20) {
-    return NextResponse.json({ ok: false, error: "Máximo 20 acciones por request" }, { status: 400 });
+    logApiEvent({ requestId, route: "/api/ai/execute", method: "POST", storeId, status: 400, message: "too many actions" });
+    return json({ ok: false, error: "Máximo 20 acciones por request" }, 400);
   }
 
   const store = await prisma.store.findUnique({ where: { id: storeId } });
-  if (!store) return NextResponse.json({ ok: false, error: "storeId inválido" }, { status: 400 });
+  if (!store) {
+    logApiEvent({ requestId, route: "/api/ai/execute", method: "POST", storeId, status: 400, message: "invalid storeId" });
+    return json({ ok: false, error: "storeId inválido" }, 400);
+  }
 
   const ip = req.headers.get("x-forwarded-for") || null;
   const userAgent = req.headers.get("user-agent") || null;
@@ -275,5 +290,8 @@ export async function POST(req: Request) {
     }
   }
 
-  return NextResponse.json({ ok: results.every((r) => r.ok), results });
+  const ok = results.every((r) => r.ok);
+  logApiEvent({ requestId, route: "/api/ai/execute", method: "POST", storeId, status: ok ? 200 : 207, message: `actions processed: ${results.length}` });
+
+  return json({ ok, results }, ok ? 200 : 207);
 }
