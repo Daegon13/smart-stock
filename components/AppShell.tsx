@@ -11,7 +11,7 @@ const tourByPath: Record<string, string> = {
   "/dashboard": "dashboard",
   "/today": "dashboard",
   "/import": "import",
-  "/reconcile": "tickets",
+  "/reconcile": "reconcile",
   "/stock": "stock",
   "/orders": "orders",
   "/movements": "movements"
