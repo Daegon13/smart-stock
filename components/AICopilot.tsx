@@ -123,7 +123,7 @@
                 <Badge tone="slate">{resp.modelUsed}</Badge>
               </div>
               <p className="mt-1 text-sm text-muted-foreground">
-                Si ves acciones sugeridas, podés ejecutarlas. En demo, esto es lo que más vende.
+                Si ves acciones sugeridas, podés ejecutarlas para acelerar tareas repetitivas.
               </p>
             </CardHeader>
             <CardContent className="space-y-4">

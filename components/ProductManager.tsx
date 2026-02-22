@@ -291,7 +291,7 @@ const [cats, setCats] = React.useState<{ id: string; name: string; icon: string 
             {items.length === 0 ? (
               <div className="space-y-2">
                 <div className="text-sm text-slate-600">Todavía no hay productos.</div>
-                <div className="text-xs text-slate-500">Tip: cargá demo (1 click) para probar el flujo completo.</div>
+                <div className="text-xs text-slate-500">Tip: cargá tus primeros productos para activar reposición y pedidos.</div>
                 <DemoSeedButton variant="ghost" />
               </div>
             ) : (
