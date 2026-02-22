@@ -62,7 +62,7 @@ export default async function DashboardPage() {
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <Sticker tone="purple">📊 Dashboard</Sticker>
+                <Sticker tone="purple">📊 Inicio</Sticker>
                 <div className="text-sm font-semibold text-slate-900">Local activo: {store.name}</div>
               </div>
               <div className="mt-1 text-sm text-slate-600">
