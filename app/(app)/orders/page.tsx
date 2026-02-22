@@ -45,7 +45,7 @@ export default async function OrdersPage() {
               <Link href="/stock">
                 <Button>
                   <span aria-hidden>🧠</span>
-                  Crear desde stock inteligente
+                  Crear desde Reposición
                 </Button>
               </Link>
               <Link href="/today">

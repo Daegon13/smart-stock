@@ -9,6 +9,7 @@ import { useI18n } from "@/components/i18n/I18nProvider";
 
 const tourByPath: Record<string, string> = {
   "/dashboard": "dashboard",
+  "/today": "dashboard",
   "/import": "import",
   "/reconcile": "tickets",
   "/stock": "stock",
