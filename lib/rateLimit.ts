@@ -7,6 +7,7 @@ type LimitArgs = {
   route: string;
   maxRequests: number;
   windowMs: number;
+  requestId?: string;
 };
 
 function isRateLimitEnabled() {
@@ -26,6 +27,7 @@ export function enforceRateLimit(args: LimitArgs) {
   const now = Date.now();
   const ip = getClientIp(args.req);
   const key = `${args.route}:${ip}`;
+  const requestId = args.requestId || args.req.headers.get("x-request-id") || crypto.randomUUID();
 
   const current = buckets.get(key);
   if (!current || current.resetAt <= now) {
@@ -41,7 +43,7 @@ export function enforceRateLimit(args: LimitArgs) {
         { error: "Demasiadas solicitudes. Intentá nuevamente en unos segundos." },
         {
           status: 429,
-          headers: { "retry-after": String(retryAfter) }
+          headers: { "retry-after": String(retryAfter), "x-request-id": requestId }
         }
       )
     };

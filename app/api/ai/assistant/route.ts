@@ -8,7 +8,7 @@ import { getRequestId, logApiEvent } from "@/lib/observability";
 
 export async function POST(req: Request) {
   const requestId = getRequestId(req);
-  const limit = enforceRateLimit({ req, route: "/api/ai/assistant", maxRequests: 30, windowMs: 60_000 });
+  const limit = enforceRateLimit({ req, route: "/api/ai/assistant", maxRequests: 30, windowMs: 60_000, requestId });
   if (!limit.ok) {
     logApiEvent({ requestId, route: "/api/ai/assistant", method: "POST", status: 429, message: "rate limited" });
     return limit.response;
