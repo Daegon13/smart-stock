@@ -39,6 +39,46 @@ export async function GET(req: Request) {
     select: { productId: true, type: true, qty: true, createdAt: true }
   });
 
+
+  const alerts = {
+    negativeStock: products
+      .filter((p) => p.currentStock < 0)
+      .map((p) => ({ productId: p.id, name: p.name, currentStock: p.currentStock })),
+    anomalousMovements: [] as Array<{ productId: string; name: string; movementId: string; qty: number; threshold: number }>
+  };
+
+  const recent = await prisma.inventoryMovement.findMany({
+    where: { storeId },
+    orderBy: { createdAt: "desc" },
+    take: 500,
+    select: { id: true, productId: true, qty: true, type: true, createdAt: true, product: { select: { name: true } } }
+  });
+
+  const byProduct = new Map<string, number[]>();
+  for (const m of recent) {
+    const qty = Math.max(0, m.qty);
+    if (qty <= 0) continue;
+    const arr = byProduct.get(m.productId) || [];
+    arr.push(qty);
+    byProduct.set(m.productId, arr);
+  }
+
+  for (const m of recent) {
+    const values = byProduct.get(m.productId) || [];
+    if (values.length < 5) continue;
+    const avg = values.reduce((a, b) => a + b, 0) / values.length;
+    const threshold = Math.max(10, avg * 4);
+    if (m.qty > threshold) {
+      alerts.anomalousMovements.push({
+        productId: m.productId,
+        name: m.product?.name || "Producto",
+        movementId: m.id,
+        qty: m.qty,
+        threshold: Math.round(threshold)
+      });
+    }
+  }
+
   const mappedProducts = products.map(({ supplier, ...p }) => ({
     ...p,
     supplierName: supplier?.name ?? null,
@@ -52,5 +92,5 @@ export async function GET(req: Request) {
     safetyStock: Number.isFinite(fallbackSafety) ? fallbackSafety : 0
   });
 
-  return NextResponse.json({ suggestions });
+  return NextResponse.json({ suggestions, alerts });
 }
