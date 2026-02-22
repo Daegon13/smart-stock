@@ -12,7 +12,7 @@ export function getTourSteps(t: (key: string) => string): TourStep[] {
       id: "dashboard",
       title: t("tour.1.title"),
       description: t("tour.1.desc"),
-      path: "/dashboard",
+      path: "/today",
       target: '[data-tour="dashboard"]'
     },
     {

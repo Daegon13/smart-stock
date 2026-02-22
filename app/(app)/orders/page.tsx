@@ -101,7 +101,6 @@ export default async function OrdersPage() {
         </CardContent>
       </Card>
 
-      {process.env.NODE_ENV !== "production" ? <div className="text-[11px] text-slate-500">Modo beta.</div> : null}
     </div>
   );
 }

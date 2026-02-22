@@ -153,11 +153,6 @@ export function AppShell({ children }: { children: ReactNode }) {
                   <div className="font-semibold text-slate-700">{t("demo.title")}</div>
                   <div className="mt-1">{t("demo.text")}</div>
                 </div>
-
-                <div data-tour="login-future" className="rounded-2xl border border-indigo-200 bg-indigo-50 p-3">
-                  <div className="font-semibold text-indigo-900">🔐 {t("auth.future.title")}</div>
-                  <div className="mt-1 text-indigo-700">{t("auth.future.text")}</div>
-                </div>
               </div>
             ) : null}
           </div>
