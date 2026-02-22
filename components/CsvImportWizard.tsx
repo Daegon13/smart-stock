@@ -430,7 +430,7 @@ export function CsvImportWizard({ storeId }: { storeId: string }) {
               <Badge variant={mappedPreview.emptyCore > 0 ? "soon" : "ok"}>
                 Filas sin Nombre/SKU: {mappedPreview.emptyCore}
               </Badge>
-              <Badge variant="neutral">Se importarán hasta 2000 filas (MVP)</Badge>
+              <Badge variant="neutral">Se importarán hasta 2000 filas por carga</Badge>
               <div className="ml-auto text-xs text-slate-500">Archivo: {fileName || "(sin nombre)"}</div>
             </div>
 

@@ -1,8 +1,8 @@
 import Link from "next/link";
 
 const nav = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/products", label: "Productos" }
+  { href: "/today", label: "Hoy" },
+  { href: "/import", label: "Importar ventas" }
 ];
 
 export function AppNav() {
@@ -10,7 +10,7 @@ export function AppNav() {
     <header className="border-b border-slate-200 bg-white">
       <div className="mx-auto flex max-w-5xl items-center gap-6 px-4 py-4">
         <Link href="/dashboard" className="font-semibold text-slate-900">
-          Stock Inteligente
+          Reposición
         </Link>
         <nav className="flex items-center gap-4">
           {nav.map((i) => (
@@ -23,7 +23,7 @@ export function AppNav() {
             </Link>
           ))}
         </nav>
-        <div className="ml-auto text-xs text-slate-500">MVP</div>
+        {process.env.NODE_ENV !== "production" ? <div className="ml-auto text-xs text-slate-500">Beta</div> : null}
       </div>
     </header>
   );

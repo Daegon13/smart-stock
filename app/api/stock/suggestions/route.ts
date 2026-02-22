@@ -39,6 +39,10 @@ export async function GET(req: Request) {
     select: { productId: true, type: true, qty: true, createdAt: true }
   });
 
+  const salesMovements = movements.filter((m) => m.type === "OUT");
+  const productsMissingConfig = products.filter(
+    (p) => (p.stockMin ?? 0) <= 0 || (p.coverageDays ?? 0) <= 0 || (p.leadTimeDays ?? 0) <= 0
+  ).length;
 
   const alerts = {
     negativeStock: products
@@ -92,5 +96,11 @@ export async function GET(req: Request) {
     safetyStock: Number.isFinite(fallbackSafety) ? fallbackSafety : 0
   });
 
-  return NextResponse.json({ suggestions, alerts });
+  const readiness = {
+    productCount: products.length,
+    salesCount: salesMovements.length,
+    productsMissingConfig
+  };
+
+  return NextResponse.json({ suggestions, alerts, readiness });
 }

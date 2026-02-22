@@ -34,10 +34,10 @@ export default async function OrdersPage() {
             <div>
               <div className="flex items-center gap-2">
                 <Sticker tone="emerald">📦</Sticker>
-                <div className="text-sm font-semibold text-slate-900">Órdenes de compra</div>
+                <div className="text-sm font-semibold text-slate-900">Pedidos</div>
               </div>
               <div className="mt-1 text-sm text-slate-600">
-                Flujo completo: crear pedido → WhatsApp → recepción parcial → historial.
+                Armá el pedido por proveedor y enviá por WhatsApp.
               </div>
             </div>
 
@@ -62,13 +62,14 @@ export default async function OrdersPage() {
       <Card>
         <CardHeader>
           <div className="text-sm font-semibold text-slate-900">Historial</div>
-          <div className="text-xs text-slate-500">Últimas 50 órdenes (demo).</div>
+          <div className="text-xs text-slate-500">Últimos 50 pedidos.</div>
         </CardHeader>
         <CardContent>
           {orders.length === 0 ? (
-            <div className="text-sm text-slate-600">
-              Todavía no hay órdenes. En <span className="font-semibold">Stock inteligente</span> vas a ver el botón “Crear OC”
-              por proveedor.
+            <div className="space-y-2 text-sm text-slate-600">
+              <div>Todavía no hay pedidos.</div>
+              <div>Para empezar: andá a Reposición y creá el primer pedido.</div>
+              <Link href="/stock" className="inline-block"><Button>Ir a Reposición</Button></Link>
             </div>
           ) : (
             <div className="space-y-2">
@@ -100,9 +101,7 @@ export default async function OrdersPage() {
         </CardContent>
       </Card>
 
-      <div className="text-[11px] text-slate-500">
-        Nota MVP: no hay numeración fiscal ni multi-local. Esto es para demo comercial.
-      </div>
+      {process.env.NODE_ENV !== "production" ? <div className="text-[11px] text-slate-500">Modo beta.</div> : null}
     </div>
   );
 }

@@ -2,8 +2,8 @@ import "./globals.css";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Stock Inteligente (MVP)",
-  description: "MVP de control de inventario y compras inteligentes para pymes"
+  title: "Reposición inteligente",
+  description: "Control de inventario y pedidos por proveedor para negocios"
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

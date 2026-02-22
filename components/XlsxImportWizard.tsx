@@ -491,7 +491,7 @@ export function XlsxImportWizard({ storeId }: { storeId: string }) {
           <CardContent className="space-y-4">
             <div className="flex flex-wrap items-center gap-2 text-sm">
               <Badge variant={mappedPreview.emptyCore > 0 ? "soon" : "ok"}>Filas sin Nombre/SKU: {mappedPreview.emptyCore}</Badge>
-              <Badge variant="neutral">Importa hasta {cappedAt} filas (MVP)</Badge>
+              <Badge variant="neutral">Importa hasta {cappedAt} filas por carga</Badge>
               <div className="ml-auto text-xs text-slate-500">Archivo: {fileName || "(sin nombre)"} · Hoja: {sheetName || "—"}</div>
             </div>
 
