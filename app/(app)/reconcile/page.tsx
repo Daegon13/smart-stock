@@ -10,12 +10,11 @@ export default async function ReconcilePage({
 
   return (
     <div className="space-y-4" data-tour="reconcile">
-      <div>
-        <div className="text-sm text-slate-500">Minimarket • Ventas POS</div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Conciliar “sin match”</h1>
+      <div data-tour="tickets">
+        <div className="text-sm text-slate-500">Ventas importadas</div>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Arreglar productos no reconocidos</h1>
         <p className="mt-1 max-w-2xl text-sm text-slate-600">
-          Cuando importás tickets, algunas líneas pueden venir con un código/nombre que no existe en tu catálogo. Acá las asignás una sola vez y el
-          sistema guarda un alias para que la próxima importación matchee sola.
+          Si una línea no coincide con tu catálogo, la resolvés acá una vez y la próxima se completa sola.
         </p>
       </div>
 

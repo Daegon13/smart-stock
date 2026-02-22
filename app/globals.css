@@ -19,3 +19,27 @@ body {
 ::selection {
   background: rgba(99, 102, 241, 0.25);
 }
+
+body.senior-text {
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+body.senior-text button,
+body.senior-text a,
+body.senior-text input,
+body.senior-text select,
+body.senior-text textarea {
+  min-height: 44px;
+}
+
+body.simple-ui .rounded-2xl,
+body.simple-ui .rounded-xl {
+  border-radius: 0.75rem;
+}
+
+body.simple-ui .p-4,
+body.simple-ui .p-5,
+body.simple-ui .p-6 {
+  padding: 0.85rem;
+}

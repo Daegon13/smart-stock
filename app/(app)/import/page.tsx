@@ -7,9 +7,9 @@ export default async function ImportPage() {
   return (
     <div className="space-y-4" data-tour="import">
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900">Importar</h1>
+        <h1 className="text-2xl font-semibold text-slate-900">Importar ventas</h1>
         <p className="mt-1 text-sm text-slate-600">
-          Local: {store.name} · Tip: si querés probar sin tu data, usá “Cargar datos demo” desde el Dashboard.
+          Local: {store.name}. Para empezar: subí un archivo y seguí los pasos.
         </p>
       </div>
 

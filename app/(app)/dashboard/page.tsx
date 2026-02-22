@@ -66,15 +66,15 @@ export default async function DashboardPage() {
                 <div className="text-sm font-semibold text-slate-900">Local activo: {store.name}</div>
               </div>
               <div className="mt-1 text-sm text-slate-600">
-                Mostrá esto en demo: importación → venta rápida → stock inteligente → pedido por WhatsApp → IA.
+                Para empezar rápido: Hoy → Importar ventas → Reposición → Pedidos.
               </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <Link href="/today"><Button variant="soft"><span aria-hidden>✅</span>Qué hacer hoy</Button></Link>
+              <Link href="/today"><Button variant="soft"><span aria-hidden>✅</span>Hoy</Button></Link>
               <Link href="/dashboard?tour=1&step=1"><Button variant="soft"><span aria-hidden>🎬</span>Tour demo</Button></Link>
-              <Link href="/import"><Button variant="outline"><span aria-hidden>⬆️</span>Importar</Button></Link>
-              <Link href="/assistant"><Button><Sticker tone="pink">✨ IA</Sticker>Preguntar</Button></Link>
+              <Link href="/import"><Button variant="outline"><span aria-hidden>⬆️</span>Importar ventas</Button></Link>
+              <Link href="/stock"><Button><span aria-hidden>📦</span>Ir a Reposición</Button></Link>
             </div>
           </div>
 
@@ -82,10 +82,10 @@ export default async function DashboardPage() {
             <div className="mt-5 rounded-2xl border border-slate-200/60 bg-white/60 p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <div className="text-sm font-semibold text-slate-900">Empezar en 1 clic (para grabar una demo ya mismo)</div>
-                  <div className="mt-1 text-sm text-slate-600">Carga productos + proveedores + movimientos y activa el “wow”.</div>
-                </div>
-                <DemoSeedButton />
+                    <div className="text-sm font-semibold text-slate-900">Todavía no hay datos</div>
+                    <div className="mt-1 text-sm text-slate-600">Carga productos + proveedores + movimientos y activa el “wow”.</div>
+                  </div>
+                  <DemoSeedButton />
               </div>
             </div>
           ) : null}
@@ -147,8 +147,8 @@ export default async function DashboardPage() {
             )}
 
             <div className="mt-4 flex flex-wrap gap-2">
-              <Link href="/stock"><Button variant="outline"><span aria-hidden>🧠</span>Stock inteligente</Button></Link>
-              <Link href="/assistant"><Button variant="outline"><span aria-hidden>✨</span>Preguntar a IA</Button></Link>
+              <Link href="/stock"><Button variant="outline"><span aria-hidden>📦</span>Reposición</Button></Link>
+              <Link href="/orders"><Button variant="outline"><span aria-hidden>📝</span>Pedidos</Button></Link>
             </div>
           </CardContent>
         </Card>
