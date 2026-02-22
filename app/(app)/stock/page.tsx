@@ -5,7 +5,7 @@ export default async function StockPage() {
   const store = await getOrCreateDefaultStore();
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-tour="stock">
       <div>
         <h1 className="text-2xl font-semibold text-slate-900">Stock inteligente</h1>
         <p className="mt-1 text-sm text-slate-600">

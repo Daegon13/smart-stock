@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { requirePermission } from "@/lib/rbac";
 import { writeAudit } from "@/lib/audit";
 import { normName } from "@/lib/posNormalize";
+import { enforceRateLimit } from "@/lib/rateLimit";
 
 const ActionSchema = z.discriminatedUnion("type", [
   z.object({
@@ -66,6 +67,9 @@ function slugify(s: string) {
 }
 
 export async function POST(req: Request) {
+  const limit = enforceRateLimit({ req, route: "/api/ai/execute", maxRequests: 20, windowMs: 60_000 });
+  if (!limit.ok) return limit.response;
+
   const perm = requirePermission(req, "ai:execute");
   if (!perm.ok) return perm.response;
 
@@ -76,6 +80,9 @@ export async function POST(req: Request) {
   }
 
   const { storeId, actions } = parsed.data;
+  if (actions.length > 20) {
+    return NextResponse.json({ ok: false, error: "Máximo 20 acciones por request" }, { status: 400 });
+  }
 
   const store = await prisma.store.findUnique({ where: { id: storeId } });
   if (!store) return NextResponse.json({ ok: false, error: "storeId inválido" }, { status: 400 });

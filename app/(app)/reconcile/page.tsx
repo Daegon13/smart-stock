@@ -9,7 +9,7 @@ export default async function ReconcilePage({
   const store = await getOrCreateDefaultStore();
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-tour="reconcile">
       <div>
         <div className="text-sm text-slate-500">Minimarket • Ventas POS</div>
         <h1 className="text-2xl font-bold tracking-tight text-slate-900">Conciliar “sin match”</h1>
