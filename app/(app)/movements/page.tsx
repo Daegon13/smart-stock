@@ -25,7 +25,7 @@ export default async function MovementsPage({
   const initialView = typeof searchParams?.view === "string" && searchParams.view === "history" ? "history" : "quick";
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-tour="movements">
       <div>
         <h1 className="text-2xl font-semibold text-slate-900">Movimientos</h1>
         <p className="mt-1 text-sm text-slate-600">Local: {store.name}</p>
