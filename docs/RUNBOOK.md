@@ -12,6 +12,19 @@ Si usás Supabase, mirá también: `DEPLOY-VERCEL-SUPABASE.md`.
 ### IA (opcional)
 - `OPENAI_API_KEY` = key para habilitar IA real. Si falta, queda fallback.
 
+
+### Login simple del panel (recomendado)
+- `AUTH_EMAIL` = email habilitado para entrar al panel
+- `AUTH_SECRET` = secreto largo para firmar cookie `ss_auth`
+- `AUTH_PASSWORD` = contraseña en texto plano (solo para pruebas internas)
+- `AUTH_PASSWORD_HASH` = hash tipo `s2$...` (preferido sobre `AUTH_PASSWORD`)
+- `AUTH_SESSION_MAX_AGE_SECONDS` = duración de sesión `ss_auth` en segundos (opcional; default 30 días)
+- `AUTH_LOGIN_MAX_ATTEMPTS` = intentos máximos de login por IP dentro de la ventana (opcional; default 10)
+- `AUTH_LOGIN_WINDOW_SECONDS` = ventana de rate-limit de login por IP en segundos (opcional; default 60)
+
+> Si `AUTH_EMAIL` + `AUTH_SECRET` están configurados, el middleware usa login con email/contraseña (`/login`).
+> Si no, mantiene fallback al beta gate histórico (`BETA_PASSWORD` + `BETA_SECRET`).
+
 ### Beta gate (opcional pero recomendado para público)
 - `BETA_PASSWORD` = password de acceso a la beta
 - `BETA_SECRET` = secreto largo para firmar cookie

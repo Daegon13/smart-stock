@@ -10,7 +10,7 @@ export default async function CategoriesPage() {
         <div className="text-sm text-slate-500">Minimarket • Organización</div>
         <h1 className="text-2xl font-bold tracking-tight text-slate-900">Categorías</h1>
         <p className="mt-1 max-w-2xl text-sm text-slate-600">
-          Cargá categorías reales (bebidas, lácteos, limpieza…) y la demo pega un salto enorme. Además deja la base armada para reportes y compras.
+          Cargá categorías reales (bebidas, lácteos, limpieza…) para ordenar mejor el negocio y dejar base para reportes y compras.
         </p>
       </div>
 

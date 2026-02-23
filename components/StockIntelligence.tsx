@@ -41,6 +41,12 @@ type DraftDTO = {
   itemCount: number;
 };
 
+type ReadinessDTO = {
+  productCount: number;
+  salesCount: number;
+  productsMissingConfig: number;
+};
+
 async function jsonFetch<T>(input: RequestInfo, init?: RequestInit) {
   const res = await fetch(input, {
     headers: { "Content-Type": "application/json" },
@@ -132,6 +138,7 @@ export function StockIntelligence({ storeId, storeName }: { storeId: string; sto
   });
 
   const [selected, setSelected] = React.useState<Record<string, boolean>>({});
+  const [readiness, setReadiness] = React.useState<ReadinessDTO>({ productCount: 0, salesCount: 0, productsMissingConfig: 0 });
 
   async function loadDrafts() {
     try {
@@ -148,8 +155,9 @@ export function StockIntelligence({ storeId, storeName }: { storeId: string; sto
     setLoading(true);
     try {
       const qs = new URLSearchParams({ storeId, ...params }).toString();
-      const data = await jsonFetch<{ suggestions: SuggestionDTO[] }>(`/api/stock/suggestions?${qs}`);
+      const data = await jsonFetch<{ suggestions: SuggestionDTO[]; readiness?: ReadinessDTO }>(`/api/stock/suggestions?${qs}`);
       setItems(data.suggestions);
+      setReadiness(data.readiness ?? { productCount: data.suggestions.length, salesCount: 0, productsMissingConfig: 0 });
 
       // auto-seleccionamos lo urgente
       const nextSel: Record<string, boolean> = {};
@@ -287,7 +295,7 @@ export function StockIntelligence({ storeId, storeName }: { storeId: string; sto
                         type="button"
                         onClick={() => {
                           const fileSafe = g.supplierName.replace(/[^a-z0-9]+/gi, "-").toLowerCase();
-                          downloadTextFile(`pedido-.csv`, g.csv, "text/csv;charset=utf-8");
+                          downloadTextFile(`pedido-${fileSafe || "proveedor"}.csv`, g.csv, "text/csv;charset=utf-8");
                         }}
                       >
                         🧾 Descargar CSV
@@ -421,10 +429,32 @@ export function StockIntelligence({ storeId, storeName }: { storeId: string; sto
         </CardHeader>
         <CardContent>
           {items.length === 0 ? (
-            <div className="space-y-2">
-              <div className="text-sm text-slate-600">No hay productos todavía.</div>
-              <div className="text-xs text-slate-500">Cargá productos o usá datos demo para ver sugerencias reales.</div>
-              <DemoSeedButton variant="ghost" />
+            <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-4">
+              {readiness.productCount === 0 ? (
+                <>
+                  <div className="text-sm font-medium text-slate-900">Todavía no hay productos.</div>
+                  <div className="text-xs text-slate-600">Para empezar cargá tu catálogo y volvemos a calcular reposición.</div>
+                  <Link href="/products"><Button variant="outline">Crear producto</Button></Link>
+                </>
+              ) : readiness.salesCount === 0 ? (
+                <>
+                  <div className="text-sm font-medium text-slate-900">Todavía no hay ventas importadas.</div>
+                  <div className="text-xs text-slate-600">Importá ventas para detectar qué productos necesitan reposición.</div>
+                  <Link href="/import"><Button variant="outline">Importar ventas</Button></Link>
+                </>
+              ) : readiness.productsMissingConfig > 0 ? (
+                <>
+                  <div className="text-sm font-medium text-slate-900">Falta configurar parte de la reposición.</div>
+                  <div className="text-xs text-slate-600">Completá mínimos, cobertura y lead time en productos para obtener sugerencias.</div>
+                  <Link href="/products"><Button variant="outline">Configurar reposición</Button></Link>
+                </>
+              ) : (
+                <>
+                  <div className="text-sm font-medium text-slate-900">Hoy no hay urgentes para reponer.</div>
+                  <div className="text-xs text-slate-600">Tu stock está al día con la demanda reciente.</div>
+                </>
+              )}
+              {(process.env.NODE_ENV !== "production" || process.env.NEXT_PUBLIC_ALLOW_DEMO_SEED === "true") && readiness.productCount === 0 ? <DemoSeedButton variant="ghost" /> : null}
             </div>
           ) : (
             <div className="space-y-2">

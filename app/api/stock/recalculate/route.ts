@@ -6,18 +6,19 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   const requestId = getRequestId(req);
+  const json = (body: unknown, status = 200) => NextResponse.json(body, { status, headers: { "x-request-id": requestId } });
   const body = await req.json().catch(() => null);
   const storeId = String(body?.storeId || "");
 
   if (!storeId) {
     logApiEvent({ requestId, route: "/api/stock/recalculate", method: "POST", status: 400, message: "missing storeId" });
-    return NextResponse.json({ ok: false, error: "storeId requerido" }, { status: 400 });
+    return json({ ok: false, error: "storeId requerido" }, 400);
   }
 
   const store = await prisma.store.findUnique({ where: { id: storeId }, select: { id: true } });
   if (!store) {
     logApiEvent({ requestId, route: "/api/stock/recalculate", method: "POST", storeId, status: 404, message: "store not found" });
-    return NextResponse.json({ ok: false, error: "storeId inválido" }, { status: 404 });
+    return json({ ok: false, error: "storeId inválido" }, 404);
   }
 
   const movements = await prisma.inventoryMovement.findMany({
@@ -51,7 +52,7 @@ export async function POST(req: Request) {
     message: `recalculated stock (movements=${movements.length}, products=${updates.length})`
   });
 
-  return NextResponse.json({
+  return json({
     ok: true,
     stats: {
       movements: movements.length,

@@ -57,7 +57,12 @@ export function ImportBatchesCard({ storeId }: { storeId: string }) {
         body: JSON.stringify({ storeId })
       });
       const data = await res.json().catch(() => null);
-      if (!res.ok || !data?.ok) throw new Error(data?.error || `Error (${res.status})`);
+      if (!res.ok || !data?.ok) {
+        if (res.status === 409) {
+          throw new Error(data?.error || "No se puede deshacer porque ya hay movimientos posteriores relacionados.");
+        }
+        throw new Error(data?.error || `Error (${res.status})`);
+      }
       await refresh();
     } catch (e: any) {
       setError(e?.message || "Error");
@@ -72,7 +77,7 @@ export function ImportBatchesCard({ storeId }: { storeId: string }) {
         <div className="min-w-0">
           <CardTitle>Historial de imports</CardTitle>
           <div className="mt-1 text-sm text-slate-600">
-            Últimos lotes importados (tickets POS). Sirve para auditar y, en el próximo patch, deshacer el último lote.
+            Últimos lotes importados (tickets POS). Podés auditar qué entró y deshacer un lote cuando no haya movimientos posteriores.
           </div>
         </div>
         <Button variant="outline" onClick={() => void refresh()} disabled={loading}>
@@ -120,7 +125,7 @@ export function ImportBatchesCard({ storeId }: { storeId: string }) {
                   variant="outline"
                   onClick={() => void undoBatch(b.id)}
                   disabled={undoing === b.id || loading}
-                  title="Solo se puede deshacer si no hay movimientos posteriores"
+                  title="Deshace tickets y movimientos del lote. Se bloquea si hay movimientos posteriores."
                 >
                   {undoing === b.id ? "Deshaciendo…" : "Deshacer"}
                 </Button>

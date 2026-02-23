@@ -7,11 +7,10 @@ export default async function AliasesPage() {
   return (
     <div className="space-y-4">
       <div>
-        <div className="text-sm text-slate-500">Minimarket • Matching POS</div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Aliases (códigos y nombres)</h1>
+        <div className="text-sm text-slate-500">Ventas importadas</div>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Sinónimos / Códigos</h1>
         <p className="mt-1 max-w-2xl text-sm text-slate-600">
-          Acá se ve la “memoria” del sistema: cómo traduce lo que viene en el ticket del POS a tu catálogo.
-          Si alguna vez matchea mal, lo corregís y listo.
+          Acá se guarda la memoria de equivalencias para reconocer productos automáticamente.
         </p>
       </div>
 

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { validateBetaToken } from "@/lib/betaAuth";
+import { validatePanelToken } from "@/lib/panelToken";
 
 const PUBLIC_PATHS = new Set<string>(["/", "/login"]);
 
@@ -34,19 +35,28 @@ function nextWithRequestId(req: NextRequest, requestId: string) {
 
 export async function middleware(req: NextRequest) {
   const requestId = getOrCreateRequestId(req);
-  const password = process.env.BETA_PASSWORD;
-  const secret = process.env.BETA_SECRET;
-
-  // Si no está configurado, no aplicamos gate (modo demo/dev).
-  if (!password || !secret) return nextWithRequestId(req, requestId);
+  const authEmail = (process.env.AUTH_EMAIL || "").trim().toLowerCase();
+  const authSecret = process.env.AUTH_SECRET || process.env.BETA_SECRET;
 
   const { pathname, search } = req.nextUrl;
   if (isPublicPath(pathname)) return nextWithRequestId(req, requestId);
 
-  const token = req.cookies.get("ss_beta")?.value || "";
-  const ok = token ? await validateBetaToken(secret, token) : false;
+  if (authEmail && authSecret) {
+    const authToken = req.cookies.get("ss_auth")?.value || "";
+    const payload = authToken ? await validatePanelToken(authSecret, authToken) : null;
+    const ok = payload?.email === authEmail;
+    if (ok) return nextWithRequestId(req, requestId);
+  } else {
+    const password = process.env.BETA_PASSWORD;
+    const secret = process.env.BETA_SECRET;
 
-  if (ok) return nextWithRequestId(req, requestId);
+    // Si no está configurado, no aplicamos gate (modo demo/dev).
+    if (!password || !secret) return nextWithRequestId(req, requestId);
+
+    const token = req.cookies.get("ss_beta")?.value || "";
+    const ok = token ? await validateBetaToken(secret, token) : false;
+    if (ok) return nextWithRequestId(req, requestId);
+  }
 
   const url = req.nextUrl.clone();
   url.pathname = "/login";

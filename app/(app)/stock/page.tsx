@@ -7,9 +7,9 @@ export default async function StockPage() {
   return (
     <div className="space-y-4" data-tour="stock">
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900">Stock inteligente</h1>
+        <h1 className="text-2xl font-semibold text-slate-900">Reposición</h1>
         <p className="mt-1 text-sm text-slate-600">
-          Local: {store.name} · Genera sugerencias de reposición usando consumo reciente.
+          Local: {store.name}. Te mostramos qué reponer hoy y cuánto pedir.
         </p>
       </div>
 

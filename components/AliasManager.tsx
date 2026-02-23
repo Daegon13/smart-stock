@@ -125,7 +125,7 @@ export function AliasManager({ storeId }: { storeId: string }) {
                 <div className="text-sm font-semibold text-slate-900">{total} alias</div>
               </div>
               <div className="text-sm text-slate-600">
-                Si un ticket matchea mal, venís acá y corregís/borrás el alias. Esto es lo que hace que la demo se sienta “inteligente”.
+                Si un ticket matchea mal, venís acá y corregís/borrás el alias para que la próxima importación salga bien.
               </div>
             </div>
 

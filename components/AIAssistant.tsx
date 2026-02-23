@@ -18,7 +18,7 @@ async function jsonFetch<T>(input: RequestInfo, init?: RequestInit) {
   return (await res.json()) as T;
 }
 
-export function AIAssistant({ storeId }: { storeId: string }) {
+export function AIAssistant({ storeId, hasOpenAI }: { storeId: string; hasOpenAI: boolean }) {
   const [msgs, setMsgs] = React.useState<Msg[]>([
     {
       role: "assistant",
@@ -80,7 +80,7 @@ export function AIAssistant({ storeId }: { storeId: string }) {
                 <Sticker tone="pink">✨ IA</Sticker>
                 <div className="text-sm font-semibold text-slate-900">Asistente</div>
               </div>
-              <div className="text-xs text-slate-500">Respuestas cortas, accionables.</div>
+              <div className="text-xs text-slate-500">Respuestas cortas y accionables.</div>
             </div>
             {mode === "ai" ? (
               <Badge variant="ok">IA activa</Badge>
@@ -90,17 +90,15 @@ export function AIAssistant({ storeId }: { storeId: string }) {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="text-xs text-slate-600">
-            Tip: si está en “Modo básico”, solo falta configurar <code className="rounded bg-white px-1">OPENAI_API_KEY</code>.
-          </div>
+          <div className="text-xs text-slate-600">{hasOpenAI ? "Ayuda con IA activa." : "Ayuda básica activa. También podés usarla sin IA."}</div>
           {lastModelUsed ? (
             <div className="mt-2 text-xs text-slate-600">
               Modelo usado: <code className="rounded bg-white px-1">{lastModelUsed}</code>
             </div>
           ) : null}
 
-          <div className="mt-4 rounded-2xl border border-slate-200/60 bg-white/60 p-3">
-            <div className="text-xs font-semibold text-slate-700">Modelo</div>
+          <details className="mt-4 rounded-2xl border border-slate-200/60 bg-white/60 p-3">
+            <summary className="cursor-pointer text-xs font-semibold text-slate-700">Avanzado: modelo</summary>
             <div className="mt-2 grid gap-2">
               <div className="grid grid-cols-3 gap-2">
                 <Button
@@ -160,7 +158,7 @@ export function AIAssistant({ storeId }: { storeId: string }) {
                 </div>
               ) : null}
             </div>
-          </div>
+          </details>
 
           <div className="mt-4 space-y-2">
             <Button type="button" variant="outline" onClick={() => setInput("Armame un mensaje corto para pedir al proveedor lo urgente")}>
@@ -182,7 +180,7 @@ export function AIAssistant({ storeId }: { storeId: string }) {
         <div className="h-1 w-full bg-gradient-to-r from-indigo-600 to-fuchsia-600" />
         <CardHeader>
           <div className="text-sm font-semibold text-slate-900">Chat</div>
-          <div className="text-xs text-slate-500">No guarda conversaciones todavía (MVP).</div>
+          <div className="text-xs text-slate-500">No guarda conversaciones todavía.</div>
         </CardHeader>
         <CardContent>
           <div className="max-h-[420px] space-y-3 overflow-auto rounded-2xl border border-slate-200/60 bg-white/70 p-3">

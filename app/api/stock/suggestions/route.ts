@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { computeSuggestions } from "@/lib/stock";
+import { getRequestId, logApiEvent } from "@/lib/observability";
 
 export async function GET(req: Request) {
+  const requestId = getRequestId(req);
+  const json = (body: unknown, status = 200) => NextResponse.json(body, { status, headers: { "x-request-id": requestId } });
+
   const { searchParams } = new URL(req.url);
   const storeId = searchParams.get("storeId") || "";
   const lookbackDays = Number(searchParams.get("lookbackDays") || "30");
@@ -12,7 +16,10 @@ export async function GET(req: Request) {
   const fallbackCoverage = Number(searchParams.get("coverageDays") || searchParams.get("reviewDays") || "14");
   const fallbackSafety = Number(searchParams.get("safetyStock") || searchParams.get("safetyDays") || "0");
 
-  if (!storeId) return NextResponse.json({ error: "storeId requerido" }, { status: 400 });
+  if (!storeId) {
+    logApiEvent({ requestId, route: "/api/stock/suggestions", method: "GET", status: 400, message: "missing storeId" });
+    return json({ error: "storeId requerido" }, 400);
+  }
 
   const products = await prisma.product.findMany({
     where: { storeId },
@@ -39,6 +46,10 @@ export async function GET(req: Request) {
     select: { productId: true, type: true, qty: true, createdAt: true }
   });
 
+  const salesMovements = movements.filter((m) => m.type === "OUT");
+  const productsMissingConfig = products.filter(
+    (p) => (p.stockMin ?? 0) <= 0 || (p.coverageDays ?? 0) <= 0 || (p.leadTimeDays ?? 0) <= 0
+  ).length;
 
   const alerts = {
     negativeStock: products
@@ -92,5 +103,12 @@ export async function GET(req: Request) {
     safetyStock: Number.isFinite(fallbackSafety) ? fallbackSafety : 0
   });
 
-  return NextResponse.json({ suggestions, alerts });
+  const readiness = {
+    productCount: products.length,
+    salesCount: salesMovements.length,
+    productsMissingConfig
+  };
+
+  logApiEvent({ requestId, route: "/api/stock/suggestions", method: "GET", storeId, status: 200, message: `suggestions=${suggestions.length}` });
+  return json({ suggestions, alerts, readiness });
 }

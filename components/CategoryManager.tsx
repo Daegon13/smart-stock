@@ -108,8 +108,7 @@ export function CategoryManager({ storeId }: { storeId: string }) {
                 <div className="text-sm font-semibold text-slate-900">Categorías por ámbito</div>
               </div>
               <div className="text-sm text-slate-600">
-                Esto te permite ordenar el minimarket como en un sistema real (bebidas, lácteos, limpieza…). En la demo se usa en Productos y queda listo para
-                extenderse a Proveedores/Órdenes.
+                Esto te permite ordenar el minimarket como en un sistema real (bebidas, lácteos, limpieza…). Te ayuda a ordenar productos y deja la base lista para compras y reportes.
               </div>
             </div>
 
@@ -166,7 +165,7 @@ export function CategoryManager({ storeId }: { storeId: string }) {
           <Card>
             <CardContent className="p-6">
               <div className="text-sm font-semibold text-slate-900">Sin categorías</div>
-              <div className="mt-1 text-sm text-slate-600">Creá 5–10 para que la demo parezca un sistema real.</div>
+              <div className="mt-1 text-sm text-slate-600">Creá 5–10 categorías para ordenar mejor tu operación.</div>
             </CardContent>
           </Card>
         ) : (
