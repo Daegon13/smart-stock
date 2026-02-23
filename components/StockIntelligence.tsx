@@ -41,10 +41,11 @@ type DraftDTO = {
   itemCount: number;
 };
 
-type ReadinessDTO = {
+type SuggestionsMeta = {
   productCount: number;
-  salesCount: number;
-  productsMissingConfig: number;
+  outMovementsCount: number;
+  productsMissingMinCount: number;
+  lookbackDays: number;
 };
 
 async function jsonFetch<T>(input: RequestInfo, init?: RequestInit) {
@@ -128,6 +129,8 @@ export function StockIntelligence({ storeId, storeName }: { storeId: string; sto
   const [err, setErr] = React.useState<string | null>(null);
   const [view, setView] = React.useState<"suppliers" | "list">("suppliers");
 
+  const [meta, setMeta] = React.useState<SuggestionsMeta | null>(null);
+
   const [drafts, setDrafts] = React.useState<DraftDTO[]>([]);
   const [saveMsg, setSaveMsg] = React.useState<string | null>(null);
   const [orderMsg, setOrderMsg] = React.useState<string | null>(null);
@@ -138,7 +141,6 @@ export function StockIntelligence({ storeId, storeName }: { storeId: string; sto
   });
 
   const [selected, setSelected] = React.useState<Record<string, boolean>>({});
-  const [readiness, setReadiness] = React.useState<ReadinessDTO>({ productCount: 0, salesCount: 0, productsMissingConfig: 0 });
 
   async function loadDrafts() {
     try {
@@ -155,9 +157,11 @@ export function StockIntelligence({ storeId, storeName }: { storeId: string; sto
     setLoading(true);
     try {
       const qs = new URLSearchParams({ storeId, ...params }).toString();
-      const data = await jsonFetch<{ suggestions: SuggestionDTO[]; readiness?: ReadinessDTO }>(`/api/stock/suggestions?${qs}`);
+      const data = await jsonFetch<{ suggestions: SuggestionDTO[]; meta?: SuggestionsMeta }>(
+        `/api/stock/suggestions?${qs}`
+      );
       setItems(data.suggestions);
-      setReadiness(data.readiness ?? { productCount: data.suggestions.length, salesCount: 0, productsMissingConfig: 0 });
+      setMeta(data.meta ?? null);
 
       // auto-seleccionamos lo urgente
       const nextSel: Record<string, boolean> = {};
@@ -211,6 +215,15 @@ export function StockIntelligence({ storeId, storeName }: { storeId: string; sto
 
   const low = items.filter((i) => i.severity === "low").length;
   const soon = items.filter((i) => i.severity === "soon").length;
+
+  const readiness = React.useMemo(() => {
+    const productCount = meta?.productCount ?? (items.length > 0 ? items.length : 0);
+    const outs = meta?.outMovementsCount ?? 0;
+    const missingMin = meta?.productsMissingMinCount ?? 0;
+    const lookback = meta?.lookbackDays ?? Number(params.lookbackDays || 30);
+
+    return { productCount, outs, missingMin, lookback };
+  }, [meta, items.length, params.lookbackDays]);
 
   return (
     <div className="grid gap-6 lg:grid-cols-5">
@@ -295,7 +308,7 @@ export function StockIntelligence({ storeId, storeName }: { storeId: string; sto
                         type="button"
                         onClick={() => {
                           const fileSafe = g.supplierName.replace(/[^a-z0-9]+/gi, "-").toLowerCase();
-                          downloadTextFile(`pedido-${fileSafe || "proveedor"}.csv`, g.csv, "text/csv;charset=utf-8");
+                          downloadTextFile(`pedido-.csv`, g.csv, "text/csv;charset=utf-8");
                         }}
                       >
                         🧾 Descargar CSV
@@ -401,7 +414,7 @@ export function StockIntelligence({ storeId, storeName }: { storeId: string; sto
           <div className="flex items-center justify-between">
             <div>
               <div className="text-sm font-semibold text-slate-900">Sugerencias de reposición</div>
-              <div className="text-xs text-slate-500">Marcá lo que querés incluir en la compra.</div>
+              <div className="text-xs text-slate-500">Marcá lo que querés incluir en la compra. (1 idea por vez)</div>
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -428,33 +441,66 @@ export function StockIntelligence({ storeId, storeName }: { storeId: string; sto
           </div>
         </CardHeader>
         <CardContent>
-          {items.length === 0 ? (
-            <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-4">
-              {readiness.productCount === 0 ? (
-                <>
-                  <div className="text-sm font-medium text-slate-900">Todavía no hay productos.</div>
-                  <div className="text-xs text-slate-600">Para empezar cargá tu catálogo y volvemos a calcular reposición.</div>
-                  <Link href="/products"><Button variant="outline">Crear producto</Button></Link>
-                </>
-              ) : readiness.salesCount === 0 ? (
-                <>
-                  <div className="text-sm font-medium text-slate-900">Todavía no hay ventas importadas.</div>
-                  <div className="text-xs text-slate-600">Importá ventas para detectar qué productos necesitan reposición.</div>
-                  <Link href="/import"><Button variant="outline">Importar ventas</Button></Link>
-                </>
-              ) : readiness.productsMissingConfig > 0 ? (
-                <>
-                  <div className="text-sm font-medium text-slate-900">Falta configurar parte de la reposición.</div>
-                  <div className="text-xs text-slate-600">Completá mínimos, cobertura y lead time en productos para obtener sugerencias.</div>
-                  <Link href="/products"><Button variant="outline">Configurar reposición</Button></Link>
-                </>
-              ) : (
-                <>
-                  <div className="text-sm font-medium text-slate-900">Hoy no hay urgentes para reponer.</div>
-                  <div className="text-xs text-slate-600">Tu stock está al día con la demanda reciente.</div>
-                </>
-              )}
-              {(process.env.NODE_ENV !== "production" || process.env.NEXT_PUBLIC_ALLOW_DEMO_SEED === "true") && readiness.productCount === 0 ? <DemoSeedButton variant="ghost" /> : null}
+          {/* Callouts de “readiness”: guían al usuario sin confundir */}
+          {readiness.productCount > 0 && readiness.outs === 0 ? (
+            <div className="mb-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 ss-card">
+              <div className="font-semibold">Todavía no detectamos ventas recientes</div>
+              <div className="mt-1 text-xs text-amber-800">
+                En los últimos {readiness.lookback} días no hay salidas registradas. Importá ventas del POS/Excel o cargá una “Venta rápida”
+                para que el cálculo sea más preciso.
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Link className="underline" href="/import">
+                  Ir a Importar
+                </Link>
+                <span className="text-amber-800">·</span>
+                <Link className="underline" href="/movements?type=OUT">
+                  Venta rápida
+                </Link>
+              </div>
+            </div>
+          ) : null}
+
+          {readiness.productCount > 0 && readiness.missingMin > 0 ? (
+            <div className="mb-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-800 ss-card">
+              <div className="font-semibold">Hay productos sin mínimo configurado</div>
+              <div className="mt-1 text-xs text-slate-600">
+                {readiness.missingMin} producto(s) tienen stock mínimo en 0. Definir mínimos hace que la reposición sea más confiable.
+              </div>
+              <div className="mt-3">
+                <Link className="underline" href="/products">
+                  Ir a Productos (ajustar mínimos)
+                </Link>
+              </div>
+            </div>
+          ) : null}
+
+          {readiness.productCount === 0 && !loading ? (
+            <div className="space-y-2">
+              <div className="text-sm text-slate-600">Todavía no hay productos en este local.</div>
+              <div className="text-xs text-slate-500">Creá productos o cargá datos demo para ver sugerencias reales.</div>
+              <div className="flex flex-wrap gap-2">
+                <Link className="underline" href="/products">
+                  Crear productos
+                </Link>
+                <span className="text-slate-400">·</span>
+                <DemoSeedButton variant="ghost" />
+              </div>
+            </div>
+          ) : items.length === 0 && !loading ? (
+            <div className="space-y-2">
+              <div className="text-sm text-slate-600">No hay sugerencias por ahora.</div>
+              <div className="text-xs text-slate-500">
+                Si ya tenés productos, probá recalcular. Si está todo ok, perfecto: hoy no hay urgentes.
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button variant="outline" size="sm" onClick={() => refresh()}>
+                  🔄 Recalcular
+                </Button>
+                <Link className="underline text-xs" href="/today">
+                  Ver “Hoy”
+                </Link>
+              </div>
             </div>
           ) : (
             <div className="space-y-2">

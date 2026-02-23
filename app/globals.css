@@ -16,30 +16,43 @@ body {
     #f8fafc;
 }
 
-::selection {
-  background: rgba(99, 102, 241, 0.25);
-}
+/*
+  Accesibilidad (modo senior / modo simple)
 
-body.senior-text {
+  Nota: usamos clases en <body> para no acoplarlo a componentes específicos.
+  Se activan desde el AppShell y se guardan en localStorage.
+*/
+
+body.ss-senior {
   font-size: 18px;
   line-height: 1.6;
 }
 
-body.senior-text button,
-body.senior-text a,
-body.senior-text input,
-body.senior-text select,
-body.senior-text textarea {
+body.ss-senior button,
+body.ss-senior input,
+body.ss-senior select,
+body.ss-senior textarea,
+body.ss-senior a {
+  font-size: 18px;
+}
+
+/* Targets táctiles cómodos */
+body.ss-senior button,
+body.ss-senior a[role="button"],
+body.ss-senior input,
+body.ss-senior select {
   min-height: 44px;
 }
 
-body.simple-ui .rounded-2xl,
-body.simple-ui .rounded-xl {
-  border-radius: 0.75rem;
+/* Modo simple: un poco más de aire */
+body.ss-simple .ss-card {
+  padding: 1.15rem;
 }
 
-body.simple-ui .p-4,
-body.simple-ui .p-5,
-body.simple-ui .p-6 {
-  padding: 0.85rem;
+body.ss-simple .ss-section {
+  margin-bottom: 1.25rem;
+}
+
+::selection {
+  background: rgba(99, 102, 241, 0.25);
 }
