@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { getRequestId, logApiEvent } from "@/lib/observability";
 import { normalizeRole } from "@/lib/rbac";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req: Request) {
   const requestId = getRequestId(req);
 
@@ -22,7 +24,22 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json().catch(() => null);
-  const role = normalizeRole(body?.role);
+  if (!body || typeof body !== "object") {
+    logApiEvent({
+      requestId,
+      route: "/api/session/role",
+      method: "POST",
+      status: 400,
+      message: "invalid payload"
+    });
+
+    return NextResponse.json(
+      { ok: false, error: "Invalid payload" },
+      { status: 400, headers: { "x-request-id": requestId, "cache-control": "no-store" } }
+    );
+  }
+
+  const role = normalizeRole((body as { role?: unknown }).role);
 
   logApiEvent({
     requestId,
@@ -37,7 +54,7 @@ export async function POST(req: Request) {
     { headers: { "x-request-id": requestId, "cache-control": "no-store" } }
   );
   // Demo: cookie legible por cliente (para mostrar UI). En producción: esto debería venir de auth real.
-  res.cookies.set("ss_role", role, { path: "/", sameSite: "lax", secure: false });
+  res.cookies.set("ss_role", role, { path: "/", sameSite: "lax" });
 
   return res;
 }
