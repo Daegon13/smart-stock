@@ -1,9 +1,11 @@
 import { prisma } from "@/lib/db";
 import { getOrCreateDefaultStore } from "@/lib/defaultStore";
+import { isDemoAllowed } from "@/lib/demoGate";
 import { ProductManager } from "@/components/ProductManager";
 
 export default async function ProductsPage() {
   const store = await getOrCreateDefaultStore();
+  const demoAllowed = isDemoAllowed();
 
   // Tipado explícito para evitar "implicit any" en builds donde Prisma Client types todavía no existan.
   type ProductRow = {
@@ -38,6 +40,7 @@ export default async function ProductsPage() {
 
       <ProductManager
         storeId={store.id}
+        demoAllowed={demoAllowed}
         initial={products.map((p: ProductRow) => ({
           id: p.id,
           name: p.name,

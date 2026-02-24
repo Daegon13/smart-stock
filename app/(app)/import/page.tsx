@@ -1,8 +1,10 @@
 import { getOrCreateDefaultStore } from "@/lib/defaultStore";
 import { ImportHub } from "@/components/ImportHub";
+import { isUndoImportEnabled } from "@/lib/importGate";
 
 export default async function ImportPage() {
   const store = await getOrCreateDefaultStore();
+  const undoImportEnabled = isUndoImportEnabled();
 
   return (
     <div className="space-y-4" data-tour="import">
@@ -13,7 +15,7 @@ export default async function ImportPage() {
         </p>
       </div>
 
-      <ImportHub storeId={store.id} />
+      <ImportHub storeId={store.id} undoImportEnabled={undoImportEnabled} />
     </div>
   );
 }

@@ -8,10 +8,10 @@ import { Badge, Button, Sticker } from "@/components/ui";
 type NavItem = { href: string; label: string; icon: string; hint?: string };
 
 const CORE_NAV: NavItem[] = [
-  { href: "/today", label: "✅ Hoy", icon: "✅", hint: "Qué hacer ahora" },
-  { href: "/import", label: "⬆️ Importar ventas", icon: "⬆️", hint: "POS/Excel/CSV" },
-  { href: "/stock", label: "🛒 Reposición", icon: "🛒", hint: "Sugerencias" },
-  { href: "/orders", label: "📦 Pedidos", icon: "📦", hint: "WhatsApp" }
+  { href: "/today", label: "Hoy", icon: "✅", hint: "Qué hacer ahora" },
+  { href: "/import", label: "Importar ventas", icon: "⬆️", hint: "POS/Excel/CSV" },
+  { href: "/stock", label: "Reposición", icon: "🛒", hint: "Sugerencias" },
+  { href: "/orders", label: "Pedidos", icon: "📦", hint: "WhatsApp" }
 ];
 
 const MORE_NAV: NavItem[] = [

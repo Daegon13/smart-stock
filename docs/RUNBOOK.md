@@ -29,6 +29,7 @@ Si usás Supabase, mirá también: `DEPLOY-VERCEL-SUPABASE.md`.
 - `BETA_PASSWORD` = password de acceso a la beta
 - `BETA_SECRET` = secreto largo para firmar cookie
 - `ALLOW_DEMO_SEED` = "true" si querés permitir seed demo en producción
+- `UNDO_IMPORT_ENABLED` = "false" para deshabilitar endpoint/botón de deshacer imports
 
 ### Seed (solo local / controlado)
 - `SEED_DEMO` = "true" para insertar datos demo al preparar DB
@@ -93,3 +94,30 @@ Solución:
 - Si falla `postinstall`, Vercel corta antes de build.
 Solución:
 - arreglar schema, validar relaciones, y mantener `DIRECT_URL` correcto.
+
+
+## Cierre de Tren A (P32 + P35) — checklist operativo
+- [x] Beta gate activo para rutas del panel y APIs protegidas.
+- [x] Fail-closed en producción si faltan `BETA_PASSWORD`/`BETA_SECRET`.
+- [x] `/api/health` público para checks operativos.
+- [x] Endpoints demo sensibles bloqueados en producción por default (`ALLOW_DEMO_SEED` requerido).
+- [x] `npm run vercel-build` pasa en Linux/CI.
+- [ ] Branch protection en GitHub con check requerido `CI (vercel-build)` (paso manual fuera del repo).
+
+
+## Auth producción multi-tenant (nuevo)
+Variables nuevas:
+- `NEXTAUTH_URL` (reservada para migración futura a Auth.js)
+- `NEXTAUTH_SECRET` (reservada para migración futura a Auth.js)
+- `ALLOW_DEMO_NO_AUTH` (default recomendado: `false`; solo `true` en dev/demo)
+- `ALLOW_DEMO_SEED` (default recomendado: `false` en prod)
+- `ALLOW_AUTH_BOOTSTRAP` (default `false`; solo dev para crear owner inicial por API)
+- `AUTH_LOGIN_ENABLED` (default `true`; si `false` en dev, omite login para seguir iterando parches)
+
+Migración a ejecutar en producción:
+1. `npx prisma migrate deploy`
+2. `node scripts/backfill-org-franchise.mjs`
+
+Notas:
+- El local activo se resuelve por cookie `ss_active_store` y se valida contra membresías.
+- Nunca confiar en `storeId` enviado por el cliente.

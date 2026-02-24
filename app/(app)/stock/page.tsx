@@ -1,8 +1,10 @@
 import { getOrCreateDefaultStore } from "@/lib/defaultStore";
+import { isDemoAllowed } from "@/lib/demoGate";
 import { StockIntelligence } from "@/components/StockIntelligence";
 
 export default async function StockPage() {
   const store = await getOrCreateDefaultStore();
+  const demoAllowed = isDemoAllowed();
 
   return (
     <div className="space-y-4">
@@ -13,7 +15,7 @@ export default async function StockPage() {
         </p>
       </div>
 
-      <StockIntelligence storeId={store.id} storeName={store.name} />
+      <StockIntelligence storeId={store.id} storeName={store.name} demoAllowed={demoAllowed} />
     </div>
   );
 }

@@ -18,7 +18,7 @@ type Batch = {
   importedAt: string;
 };
 
-export function ImportBatchesCard({ storeId }: { storeId: string }) {
+export function ImportBatchesCard({ storeId, undoImportEnabled }: { storeId: string; undoImportEnabled: boolean }) {
   const [batches, setBatches] = React.useState<Batch[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -121,14 +121,18 @@ export function ImportBatchesCard({ storeId }: { storeId: string }) {
               </div>
 
               <div className="flex shrink-0 items-center gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => void undoBatch(b.id)}
-                  disabled={undoing === b.id || loading}
-                  title="Deshace tickets y movimientos del lote. Se bloquea si hay movimientos posteriores."
-                >
-                  {undoing === b.id ? "Deshaciendo…" : "Deshacer"}
-                </Button>
+                {undoImportEnabled ? (
+                  <Button
+                    variant="outline"
+                    onClick={() => void undoBatch(b.id)}
+                    disabled={undoing === b.id || loading}
+                    title="Deshace tickets y movimientos del lote. Se bloquea si hay movimientos posteriores."
+                  >
+                    {undoing === b.id ? "Deshaciendo…" : "Deshacer"}
+                  </Button>
+                ) : (
+                  <div className="text-xs text-slate-500">Undo deshabilitado por configuración</div>
+                )}
               </div>
             </div>
           ))}

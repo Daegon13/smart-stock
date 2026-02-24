@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestId, logApiEvent } from "@/lib/observability";
+import { isUndoImportEnabled } from "@/lib/importGate";
 
 export const dynamic = "force-dynamic";
 
@@ -11,8 +12,33 @@ export async function POST(
   const requestId = getRequestId(req);
   const json = (body: unknown, status = 200) => NextResponse.json(body, { status, headers: { "x-request-id": requestId } });
   const batchId = params.id;
+  const json = (body: unknown, status = 200) =>
+    NextResponse.json(body, { status, headers: { "x-request-id": requestId, "cache-control": "no-store" } });
+
   const body = await req.json().catch(() => null);
-  const storeId = String(body?.storeId || "");
+  if (!body || typeof body !== "object") {
+    logApiEvent({
+      requestId,
+      route: `/api/import/batches/${batchId}/undo`,
+      method: "POST",
+      status: 400,
+      message: "invalid payload"
+    });
+    return json({ ok: false, error: "Payload inválido" }, 400);
+  }
+
+  if (!isUndoImportEnabled()) {
+    logApiEvent({
+      requestId,
+      route: `/api/import/batches/${batchId}/undo`,
+      method: "POST",
+      status: 403,
+      message: "undo import disabled by config"
+    });
+    return json({ ok: false, error: "Undo import deshabilitado por configuración" }, 403);
+  }
+
+  const storeId = String((body as { storeId?: unknown }).storeId || "");
 
   if (!storeId) {
     logApiEvent({
@@ -92,7 +118,14 @@ export async function POST(
       status: 409,
       message: "blocked by newer movements"
     });
-    return json({ ok: false, error: "No se puede deshacer porque existen movimientos posteriores a este import. (Para hacerlo seguro, habría que recalcular stock desde cero o deshacer en orden inverso)." }, 409);
+    return json(
+      {
+        ok: false,
+        error:
+          "No se puede deshacer porque existen movimientos posteriores a este import. (Para hacerlo seguro, habría que recalcular stock desde cero o deshacer en orden inverso)."
+      },
+      409
+    );
   }
 
   // Calculamos el delta por producto (revertir OUT => sumar qty; revertir IN => restar qty)

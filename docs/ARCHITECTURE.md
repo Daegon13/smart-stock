@@ -71,3 +71,10 @@ Puntos sensibles:
 ## Consideración para build/deploy
 - Next build hace typecheck + prerender. El panel debe evitar DB calls en build-time.
 - Recomendación: `export const dynamic = "force-dynamic";` en layout del panel si aparece prerendering inesperado.
+
+## Auth y aislamiento multi-tenant v1
+- Sesiones persistidas en DB (`Session`) para soportar multi-sesión y revocación.
+- Modelo jerárquico: `Organization -> Franchise -> Store`.
+- Membresías: `OrgMember` y `StoreMember` (StoreMember override por local).
+- Contexto activo de local por cookie `ss_active_store` (validada server-side).
+- Fallback dev/demo disponible solo con `ALLOW_DEMO_NO_AUTH=true`.

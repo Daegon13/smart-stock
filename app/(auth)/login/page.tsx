@@ -1,4 +1,5 @@
-import { panelLogin } from "./actions";
+import { betaLogin } from "./actions";
+import { isBetaGateMisconfiguredInProd } from "@/lib/betaGate";
 import { Button, Card, CardContent, CardHeader, CardTitle, CardDescription, Input, Label } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
@@ -6,14 +7,13 @@ export const dynamic = "force-dynamic";
 export default async function LoginPage({
   searchParams
 }: {
-  searchParams?: { error?: string; next?: string };
+  searchParams?: { error?: string; misconfig?: string; next?: string };
 }) {
-  const err = searchParams?.error ?? "";
-  const showError = err === "invalid" || err === "1";
-  const setupError = err === "setup";
-  const rateError = err === "rate";
-  const nextRaw = searchParams?.next ?? "/today";
-  const nextPath = nextRaw.startsWith("/") && !nextRaw.startsWith("//") ? nextRaw : "/today";
+  const showError = searchParams?.error === "1";
+  const envMisconfigured = isBetaGateMisconfiguredInProd();
+  const showMisconfig = searchParams?.misconfig === "1" || envMisconfigured;
+  const nextRaw = searchParams?.next ?? "/dashboard";
+  const nextPath = nextRaw.startsWith("/") && !nextRaw.startsWith("//") ? nextRaw : "/dashboard";
 
   return (
     <div className="mx-auto flex min-h-[calc(100vh-60px)] max-w-md items-center justify-center px-4 py-12">
@@ -21,24 +21,25 @@ export default async function LoginPage({
         <CardHeader>
           <CardTitle>Acceso</CardTitle>
           <CardDescription>
-            Ingresá con tu email y contraseña para entrar al panel.
+            {showMisconfig
+              ? "Configuración incompleta en producción. Definí BETA_PASSWORD y BETA_SECRET para habilitar el acceso."
+              : "Ingresá la clave de beta para entrar al panel."}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form action={panelLogin} className="space-y-4">
             <input type="hidden" name="next" value={nextPath} />
             <div className="space-y-1">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" name="email" type="email" autoFocus placeholder="duenio@local.com" />
+              <Label htmlFor="password">Clave</Label>
+              <Input id="password" name="password" type="password" autoFocus placeholder="••••••••" disabled={showMisconfig} />
+              {showError && (
+                <p className="text-sm text-rose-600">Clave incorrecta.</p>
+              )}
+              {showMisconfig && (
+                <p className="text-sm text-amber-700">Falta configurar BETA_PASSWORD/BETA_SECRET en producción.</p>
+              )}
             </div>
-            <div className="space-y-1">
-              <Label htmlFor="password">Contraseña</Label>
-              <Input id="password" name="password" type="password" placeholder="••••••••" />
-              {showError ? <p className="text-sm text-rose-600">No se pudo iniciar sesión con los datos ingresados.</p> : null}
-              {rateError ? <p className="text-sm text-rose-600">Demasiados intentos. Esperá un minuto y volvé a intentar.</p> : null}
-              {setupError ? <p className="text-sm text-rose-600">Falta configurar AUTH_EMAIL/AUTH_SECRET y AUTH_PASSWORD o AUTH_PASSWORD_HASH.</p> : null}
-            </div>
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full" disabled={showMisconfig}>
               Entrar
             </Button>
           </form>

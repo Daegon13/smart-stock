@@ -28,3 +28,9 @@ Cada agente trabaja en su rama y abre PR chico. CI decide.
 - Si tocó Prisma: `npx prisma format` y migración commiteada si aplica
 - No dejó endpoints demo abiertos en prod
 - No introdujo dependencias sin motivo
+
+## Evitar conflictos con `main` antes de abrir PR
+- Sincronizá tu rama antes del patch final: `git fetch origin && git rebase origin/main` (o merge de `main` si tu flujo lo requiere).
+- Si hay conflictos, resolvelos en la rama del patch y recién después corré los checks.
+- Corré `npm run vercel-build` (el type-check de TypeScript valida casing consistente de imports para evitar fallos Linux vs Windows).
+- Confirmá que no haya cambios inesperados: `git status` limpio salvo archivos del patch.

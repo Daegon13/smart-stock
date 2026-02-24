@@ -2,8 +2,8 @@
 
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { verifyPassword } from "@/lib/panelAuth";
-import { issuePanelToken } from "@/lib/panelToken";
+import { issueBetaToken } from "@/lib/betaAuth";
+import { hasBetaGateConfig, isBetaGateMisconfiguredInProd } from "@/lib/betaGate";
 
 const loginAttemptBuckets = new Map<string, { count: number; resetAt: number }>();
 
@@ -55,16 +55,17 @@ export async function panelLogin(formData: FormData) {
   const expectedEmail = String(process.env.AUTH_EMAIL || "").trim().toLowerCase();
   const secret = process.env.AUTH_SECRET || process.env.BETA_SECRET;
 
-  if (!expectedEmail || !secret) {
-    redirect(`/login?error=setup&next=${encodeURIComponent(nextPath)}`);
-  }
+  const expected = process.env.BETA_PASSWORD ?? "";
+  const secret = process.env.BETA_SECRET ?? "";
 
-  const maxAttempts = toPositiveInt(process.env.AUTH_LOGIN_MAX_ATTEMPTS, 10);
-  const windowSeconds = toPositiveInt(process.env.AUTH_LOGIN_WINDOW_SECONDS, 60);
-  const ip = getClientIp();
-  const rate = consumeLoginAttempt(ip, maxAttempts, windowSeconds);
-  if (!rate.allowed) {
-    redirect(`/login?error=rate&next=${encodeURIComponent(nextPath)}`);
+  if (!hasBetaGateConfig()) {
+    if (isBetaGateMisconfiguredInProd()) {
+      redirect("/login?misconfig=1");
+    }
+
+    // Si no está configurado, no bloqueamos (modo dev/demo)
+    cookies().set("ss_beta", "", { path: "/", maxAge: 0 });
+    redirect(nextPath);
   }
 
   if (email !== expectedEmail || !verifyPassword(password)) {
