@@ -10,6 +10,9 @@ export async function POST(
 ) {
   const requestId = getRequestId(req);
   const batchId = params.id;
+  const json = (body: unknown, status = 200) =>
+    NextResponse.json(body, { status, headers: { "x-request-id": requestId, "cache-control": "no-store" } });
+
   const body = await req.json().catch(() => null);
   const storeId = String(body?.storeId || "");
 
@@ -21,7 +24,7 @@ export async function POST(
       status: 400,
       message: "missing storeId"
     });
-    return NextResponse.json({ ok: false, error: "storeId requerido" }, { status: 400 });
+    return json({ ok: false, error: "storeId requerido" }, 400);
   }
 
   const batch = await prisma.ticketImportBatch.findUnique({ where: { id: batchId } });
@@ -34,7 +37,7 @@ export async function POST(
       status: 404,
       message: "batch not found"
     });
-    return NextResponse.json({ ok: false, error: "Lote no encontrado" }, { status: 404 });
+    return json({ ok: false, error: "Lote no encontrado" }, 404);
   }
 
   // Movimientos creados por este lote
@@ -52,7 +55,7 @@ export async function POST(
       status: 409,
       message: "batch without movements"
     });
-    return NextResponse.json({ ok: false, error: "Este lote no tiene movimientos para deshacer." }, { status: 409 });
+    return json({ ok: false, error: "Este lote no tiene movimientos para deshacer." }, 409);
   }
 
   // Solo soportamos revertir lotes que generaron OUT/IN (tickets generan OUT)
@@ -66,10 +69,7 @@ export async function POST(
       status: 409,
       message: `invalid movement type: ${bad.type}`
     });
-    return NextResponse.json(
-      { ok: false, error: `No se puede deshacer: movimiento tipo ${bad.type}.` },
-      { status: 409 }
-    );
+    return json({ ok: false, error: `No se puede deshacer: movimiento tipo ${bad.type}.` }, 409);
   }
 
   const productIds = Array.from(new Set(movements.map((m) => m.productId)));
@@ -94,13 +94,13 @@ export async function POST(
       status: 409,
       message: "blocked by newer movements"
     });
-    return NextResponse.json(
+    return json(
       {
         ok: false,
         error:
           "No se puede deshacer porque existen movimientos posteriores a este import. (Para hacerlo seguro, habría que recalcular stock desde cero o deshacer en orden inverso)."
       },
-      { status: 409 }
+      409
     );
   }
 
@@ -149,7 +149,7 @@ export async function POST(
     message: `undo ok (movements=${movements.length}, tickets=${tickets.length}, products=${deltaByProduct.size})`
   });
 
-  return NextResponse.json({
+  return json({
     ok: true,
     undone: {
       movements: movements.length,
