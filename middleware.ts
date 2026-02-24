@@ -49,7 +49,7 @@ function nextWithRequestId(req: NextRequest, requestId: string) {
 function unauthorizedApi(requestId: string) {
   return NextResponse.json(
     { ok: false, error: "Unauthorized" },
-    { status: 401, headers: { "x-request-id": requestId } }
+    { status: 401, headers: { "x-request-id": requestId, "cache-control": "no-store" } }
   );
 }
 
@@ -58,7 +58,7 @@ function blockedByBetaMisconfig(req: NextRequest, requestId: string) {
   if (isApi) {
     return NextResponse.json(
       { ok: false, error: "Beta gate no configurado en producción (faltan BETA_PASSWORD/BETA_SECRET)." },
-      { status: 503, headers: { "x-request-id": requestId } }
+      { status: 503, headers: { "x-request-id": requestId, "cache-control": "no-store" } }
     );
   }
 
@@ -67,6 +67,7 @@ function blockedByBetaMisconfig(req: NextRequest, requestId: string) {
   url.searchParams.set("misconfig", "1");
   const res = NextResponse.redirect(url);
   res.headers.set("x-request-id", requestId);
+  res.headers.set("cache-control", "no-store");
   return res;
 }
 
@@ -102,6 +103,7 @@ export async function middleware(req: NextRequest) {
 
   const res = NextResponse.redirect(url);
   res.headers.set("x-request-id", requestId);
+  res.headers.set("cache-control", "no-store");
   return res;
 }
 
