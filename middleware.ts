@@ -45,6 +45,14 @@ function nextWithRequestId(req: NextRequest, requestId: string) {
   return res;
 }
 
+
+function unauthorizedApi(requestId: string) {
+  return NextResponse.json(
+    { ok: false, error: "Unauthorized" },
+    { status: 401, headers: { "x-request-id": requestId } }
+  );
+}
+
 function blockedByBetaMisconfig(req: NextRequest, requestId: string) {
   const isApi = req.nextUrl.pathname.startsWith("/api/");
   if (isApi) {
@@ -82,6 +90,10 @@ export async function middleware(req: NextRequest) {
   const ok = token ? await validateBetaToken(secret, token) : false;
 
   if (ok) return nextWithRequestId(req, requestId);
+
+  if (pathname.startsWith("/api/")) {
+    return unauthorizedApi(requestId);
+  }
 
   const url = req.nextUrl.clone();
   url.pathname = "/login";
