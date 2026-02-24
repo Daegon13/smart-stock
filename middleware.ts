@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { validateBetaToken } from "@/lib/betaAuth";
 import { hasBetaGateConfig, isBetaGateMisconfiguredInProd } from "@/lib/betaGate";
+import { isDevLoginBypassEnabled } from "@/lib/authFlags";
 
 const APP_ROUTE_PREFIXES = [
   "/dashboard", "/today", "/import", "/stock", "/orders", "/products", "/suppliers", "/categories", "/movements", "/reconcile", "/aliases", "/assistant", "/copilot", "/pos", "/purchases", "/tickets", "/logout", "/settings", "/select-store"
@@ -44,6 +45,10 @@ export async function middleware(req: NextRequest) {
 
   const sessionToken = req.cookies.get("ss_session")?.value;
   const activeStore = req.cookies.get("ss_active_store")?.value;
+
+  if (isDevLoginBypassEnabled()) {
+    return nextWithRequestId(req, requestId);
+  }
 
   if (sessionToken) {
     if (!activeStore && !pathname.startsWith("/select-store") && !pathname.startsWith("/api/auth")) {

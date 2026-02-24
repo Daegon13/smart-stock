@@ -1,18 +1,22 @@
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label } from "@/components/ui";
 import { signInAction } from "./actions";
+import { isDevLoginBypassEnabled } from "@/lib/authFlags";
 
 export const dynamic = "force-dynamic";
 
 export default function SignInPage({ searchParams }: { searchParams?: { error?: string } }) {
+  const bypass = isDevLoginBypassEnabled();
+
   return (
     <div className="mx-auto flex min-h-[calc(100vh-60px)] max-w-md items-center justify-center px-4 py-12">
       <Card className="w-full">
         <CardHeader>
           <CardTitle>Iniciar sesión</CardTitle>
-          <CardDescription>Acceso seguro para Smart Stock.</CardDescription>
+          <CardDescription>{bypass ? "Login deshabilitado temporalmente en desarrollo." : "Acceso seguro para Smart Stock."}</CardDescription>
         </CardHeader>
         <CardContent>
           <form action={signInAction} className="space-y-4">
+            {bypass ? <p className="text-sm text-amber-700">AUTH_LOGIN_ENABLED=false (dev): podés entrar directo al panel sin autenticar.</p> : null}
             <div className="space-y-1">
               <Label htmlFor="email">Email</Label>
               <Input id="email" name="email" type="email" required autoFocus />

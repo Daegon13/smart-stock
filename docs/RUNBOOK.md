@@ -99,6 +99,7 @@ Variables nuevas:
 - `ALLOW_DEMO_NO_AUTH` (default recomendado: `false`; solo `true` en dev/demo)
 - `ALLOW_DEMO_SEED` (default recomendado: `false` en prod)
 - `ALLOW_AUTH_BOOTSTRAP` (default `false`; solo dev para crear owner inicial por API)
+- `AUTH_LOGIN_ENABLED` (default `true`; si `false` en dev, omite login para seguir iterando parches)
 
 Migración a ejecutar en producción:
 1. `npx prisma migrate deploy`

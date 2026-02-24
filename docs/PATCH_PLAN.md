@@ -408,3 +408,4 @@ Reducir churn: “primer resultado” rápido.
 - Implementado: helpers server-side `requireUser/requireOrgAccess/requireStoreAccess/requireActiveStore`.
 - Implementado: enforcement inicial en APIs de `products`, `movements`, `categories` ignorando `storeId` del cliente.
 - Pendiente: integración completa Auth.js/NextAuth (bloqueada por política de paquetes del entorno).
+- Implementado: flag de desarrollo `AUTH_LOGIN_ENABLED=false` para bypass de login sin afectar producción.

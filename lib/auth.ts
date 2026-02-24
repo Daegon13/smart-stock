@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import crypto from "crypto";
 import { prisma } from "@/lib/db";
+import { isDevLoginBypassEnabled } from "@/lib/authFlags";
 
 export const ACTIVE_STORE_COOKIE = "ss_active_store";
 const SESSION_COOKIE = "ss_session";
@@ -75,7 +76,7 @@ export async function requireUser() {
   const session = await getUserSession();
   if (session) return session;
 
-  if (process.env.ALLOW_DEMO_NO_AUTH === "true" && process.env.NODE_ENV !== "production") {
+  if (isDevLoginBypassEnabled() || (process.env.ALLOW_DEMO_NO_AUTH === "true" && process.env.NODE_ENV !== "production")) {
     return {
       userId: "demo-user",
       email: "demo@localhost",
@@ -137,7 +138,7 @@ export async function getActiveStoreFromSession() {
     }
   }
 
-  if (process.env.ALLOW_DEMO_NO_AUTH === "true" && process.env.NODE_ENV !== "production") {
+  if (isDevLoginBypassEnabled() || (process.env.ALLOW_DEMO_NO_AUTH === "true" && process.env.NODE_ENV !== "production")) {
     const demo = await prisma.store.findFirst({ orderBy: { createdAt: "asc" } });
     if (demo) return demo;
   }
