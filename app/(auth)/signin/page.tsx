@@ -22,6 +22,9 @@ export default function SignInPage({ searchParams }: { searchParams?: { error?: 
               <Input id="password" name="password" type="password" required />
             </div>
             {searchParams?.error ? <p className="text-sm text-rose-600">{searchParams.error}</p> : null}
+          <p className="text-xs text-zinc-500">
+            Seguridad: límite de intentos por email+IP (15 min) y sesiones persistidas en DB con soporte multi-dispositivo.
+          </p>
             <Button type="submit" className="w-full">Entrar</Button>
           </form>
         </CardContent>
