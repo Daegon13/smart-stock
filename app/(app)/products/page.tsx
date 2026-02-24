@@ -4,6 +4,7 @@ import { ProductManager } from "@/components/ProductManager";
 
 export default async function ProductsPage() {
   const store = await getOrCreateDefaultStore();
+  const demoAllowed = process.env.NODE_ENV !== "production" || process.env.ALLOW_DEMO_SEED === "true";
 
   // Tipado explícito para evitar "implicit any" en builds donde Prisma Client types todavía no existan.
   type ProductRow = {
@@ -38,6 +39,7 @@ export default async function ProductsPage() {
 
       <ProductManager
         storeId={store.id}
+        demoAllowed={demoAllowed}
         initial={products.map((p: ProductRow) => ({
           id: p.id,
           name: p.name,

@@ -3,6 +3,7 @@ import { StockIntelligence } from "@/components/StockIntelligence";
 
 export default async function StockPage() {
   const store = await getOrCreateDefaultStore();
+  const demoAllowed = process.env.NODE_ENV !== "production" || process.env.ALLOW_DEMO_SEED === "true";
 
   return (
     <div className="space-y-4">
@@ -13,7 +14,7 @@ export default async function StockPage() {
         </p>
       </div>
 
-      <StockIntelligence storeId={store.id} storeName={store.name} />
+      <StockIntelligence storeId={store.id} storeName={store.name} demoAllowed={demoAllowed} />
     </div>
   );
 }
