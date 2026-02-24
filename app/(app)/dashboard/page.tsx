@@ -8,6 +8,7 @@ import { computeSuggestions } from "@/lib/stock";
 export default async function DashboardPage() {
   const store = await getOrCreateDefaultStore();
   const showDevBanners = process.env.NODE_ENV !== "production" || process.env.NEXT_PUBLIC_SHOW_DEV_BANNERS === "true";
+  const demoAllowed = process.env.NODE_ENV !== "production" || process.env.ALLOW_DEMO_SEED === "true";
   const productCount = await prisma.product.count({ where: { storeId: store.id } });
 
   const products = await prisma.product.findMany({
@@ -74,7 +75,7 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          {productCount === 0 && showDevBanners ? (
+          {productCount === 0 && demoAllowed ? (
             <div className="mt-5 rounded-2xl border border-slate-200/60 bg-white/60 p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
