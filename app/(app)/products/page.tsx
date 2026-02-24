@@ -1,10 +1,11 @@
 import { prisma } from "@/lib/db";
 import { getOrCreateDefaultStore } from "@/lib/defaultStore";
+import { isDemoAllowed } from "@/lib/demoGate";
 import { ProductManager } from "@/components/ProductManager";
 
 export default async function ProductsPage() {
   const store = await getOrCreateDefaultStore();
-  const demoAllowed = process.env.NODE_ENV !== "production" || process.env.ALLOW_DEMO_SEED === "true";
+  const demoAllowed = isDemoAllowed();
 
   // Tipado explícito para evitar "implicit any" en builds donde Prisma Client types todavía no existan.
   type ProductRow = {

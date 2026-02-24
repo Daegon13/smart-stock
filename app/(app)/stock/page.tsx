@@ -1,9 +1,10 @@
 import { getOrCreateDefaultStore } from "@/lib/defaultStore";
+import { isDemoAllowed } from "@/lib/demoGate";
 import { StockIntelligence } from "@/components/StockIntelligence";
 
 export default async function StockPage() {
   const store = await getOrCreateDefaultStore();
-  const demoAllowed = process.env.NODE_ENV !== "production" || process.env.ALLOW_DEMO_SEED === "true";
+  const demoAllowed = isDemoAllowed();
 
   return (
     <div className="space-y-4">

@@ -3,6 +3,7 @@ import { Badge, Button, Card, CardContent, CardHeader, Sticker } from "@/compone
 import { DemoSeedButton } from "@/components/DemoSeedButton";
 import { prisma } from "@/lib/db";
 import { getOrCreateDefaultStore } from "@/lib/defaultStore";
+import { isDemoAllowed } from "@/lib/demoGate";
 import { computeSuggestions } from "@/lib/stock";
 
 type Step = {
@@ -39,7 +40,7 @@ export default async function TodayPage() {
     { title: "Paso 3: Armar pedido", hint: "Creá tu pedido para proveedor", eta: "2-5 min", href: "/stock", missing: urgentCount }
   ];
 
-  const demoAllowed = process.env.NODE_ENV !== "production" || process.env.ALLOW_DEMO_SEED === "true";
+  const demoAllowed = isDemoAllowed();
 
   return (
     <div className="space-y-6" data-tour="dashboard">
