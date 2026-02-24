@@ -15,6 +15,17 @@ export async function POST(
     NextResponse.json(body, { status, headers: { "x-request-id": requestId, "cache-control": "no-store" } });
 
   const body = await req.json().catch(() => null);
+  if (!body || typeof body !== "object") {
+    logApiEvent({
+      requestId,
+      route: `/api/import/batches/${batchId}/undo`,
+      method: "POST",
+      status: 400,
+      message: "invalid payload"
+    });
+    return json({ ok: false, error: "Payload inválido" }, 400);
+  }
+
   if (!isUndoImportEnabled()) {
     logApiEvent({
       requestId,
@@ -26,7 +37,7 @@ export async function POST(
     return json({ ok: false, error: "Undo import deshabilitado por configuración" }, 403);
   }
 
-  const storeId = String(body?.storeId || "");
+  const storeId = String((body as { storeId?: unknown }).storeId || "");
 
   if (!storeId) {
     logApiEvent({
