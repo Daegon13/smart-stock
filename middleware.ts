@@ -2,16 +2,29 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { validateBetaToken } from "@/lib/betaAuth";
 
-const PUBLIC_PATHS = new Set<string>(["/", "/login", "/api/health"]);
+const APP_ROUTE_PREFIXES = [
+  "/dashboard",
+  "/today",
+  "/import",
+  "/stock",
+  "/orders",
+  "/products",
+  "/suppliers",
+  "/categories",
+  "/movements",
+  "/reconcile",
+  "/aliases",
+  "/assistant",
+  "/copilot",
+  "/pos",
+  "/purchases",
+  "/tickets",
+  "/logout"
+];
 
-function isPublicPath(pathname: string) {
-  if (PUBLIC_PATHS.has(pathname)) return true;
-  // permitir assets explícitos
-  if (pathname.startsWith("/_next")) return true;
-  if (pathname.startsWith("/favicon")) return true;
-  if (pathname.startsWith("/robots.txt")) return true;
-  if (pathname.startsWith("/sitemap")) return true;
-  return false;
+function isProtectedPath(pathname: string) {
+  if (pathname.startsWith("/api/")) return pathname !== "/api/health";
+  return APP_ROUTE_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(prefix + "/"));
 }
 
 function getOrCreateRequestId(req: NextRequest) {
@@ -55,7 +68,7 @@ export async function middleware(req: NextRequest) {
   const secret = process.env.BETA_SECRET;
 
   const { pathname, search } = req.nextUrl;
-  if (isPublicPath(pathname)) return nextWithRequestId(req, requestId);
+  if (!isProtectedPath(pathname)) return nextWithRequestId(req, requestId);
 
   // Producción: fail-closed para no dejar el panel abierto por error de configuración.
   if (process.env.NODE_ENV === "production" && (!password || !secret)) {
