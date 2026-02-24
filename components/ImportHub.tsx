@@ -8,7 +8,7 @@ import { ImportTemplates } from "@/components/ImportTemplates";
 import { TicketImportWizard } from "@/components/TicketImportWizard";
 import { ImportBatchesCard } from "@/components/ImportBatchesCard";
 
-export function ImportHub({ storeId }: { storeId: string }) {
+export function ImportHub({ storeId, undoImportEnabled }: { storeId: string; undoImportEnabled: boolean }) {
   const [tab, setTab] = React.useState<"csv" | "xlsx" | "tickets">("xlsx");
 
   return (
@@ -79,7 +79,7 @@ export function ImportHub({ storeId }: { storeId: string }) {
         <TicketImportWizard storeId={storeId} />
       )}
 
-      <ImportBatchesCard storeId={storeId} />
+      <ImportBatchesCard storeId={storeId} undoImportEnabled={undoImportEnabled} />
     </div>
   );
 }

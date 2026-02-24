@@ -16,6 +16,7 @@ Si usás Supabase, mirá también: `DEPLOY-VERCEL-SUPABASE.md`.
 - `BETA_PASSWORD` = password de acceso a la beta
 - `BETA_SECRET` = secreto largo para firmar cookie
 - `ALLOW_DEMO_SEED` = "true" si querés permitir seed demo en producción
+- `UNDO_IMPORT_ENABLED` = "false" para deshabilitar endpoint/botón de deshacer imports
 
 ### Seed (solo local / controlado)
 - `SEED_DEMO` = "true" para insertar datos demo al preparar DB

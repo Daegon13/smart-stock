@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestId, logApiEvent } from "@/lib/observability";
+import { isUndoImportEnabled } from "@/lib/importGate";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,17 @@ export async function POST(
     NextResponse.json(body, { status, headers: { "x-request-id": requestId, "cache-control": "no-store" } });
 
   const body = await req.json().catch(() => null);
+  if (!isUndoImportEnabled()) {
+    logApiEvent({
+      requestId,
+      route: `/api/import/batches/${batchId}/undo`,
+      method: "POST",
+      status: 403,
+      message: "undo import disabled by config"
+    });
+    return json({ ok: false, error: "Undo import deshabilitado por configuración" }, 403);
+  }
+
   const storeId = String(body?.storeId || "");
 
   if (!storeId) {
