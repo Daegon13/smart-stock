@@ -11,10 +11,15 @@ datasource db {
 }
 
 model Store {
-  id        String   @id @default(cuid())
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String   @id @default(cuid())
+  organizationId String?
+  franchiseId    String?
+  name           String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization? @relation(fields: [organizationId], references: [id])
+  franchise    Franchise?    @relation(fields: [franchiseId], references: [id])
 
   products       Product[]
   movements      InventoryMovement[]
@@ -32,7 +37,114 @@ model Store {
   categories Category[]
 
   // Auditoría (acciones del Copiloto y del usuario)
-  auditLogs AuditLog[]
+  auditLogs   AuditLog[]
+  memberships StoreMember[]
+
+  @@index([organizationId])
+  @@index([franchiseId])
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String?  @unique
+  createdAt DateTime @default(now())
+
+  franchises Franchise[]
+  stores     Store[]
+  members    OrgMember[]
+}
+
+model Franchise {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  stores       Store[]
+
+  @@index([organizationId])
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String?
+  createdAt    DateTime @default(now())
+
+  sessions         Session[]
+  accounts         Account[]
+  orgMemberships   OrgMember[]
+  storeMemberships StoreMember[]
+}
+
+model OrgMember {
+  id             String   @id @default(cuid())
+  userId         String
+  organizationId String
+  role           String
+  createdAt      DateTime @default(now())
+
+  user         User         @relation(fields: [userId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([userId, organizationId])
+  @@index([organizationId])
+}
+
+model StoreMember {
+  id        String   @id @default(cuid())
+  userId    String
+  storeId   String
+  role      String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id])
+  store Store @relation(fields: [storeId], references: [id])
+
+  @@unique([userId, storeId])
+  @@index([storeId])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
 }
 
 model Supplier {
@@ -48,7 +160,7 @@ model Supplier {
 }
 
 model Product {
-  id       String @id @default(cuid())
+  id       String  @id @default(cuid())
   name     String
   sku      String?
   category String? // legacy (texto libre)
@@ -56,20 +168,20 @@ model Product {
   categoryId  String?
   categoryRef Category? @relation(fields: [categoryId], references: [id])
 
-  unit     String @default("unidad")
-  cost     Float  @default(0)
-  price    Float  @default(0)
+  unit  String @default("unidad")
+  cost  Float  @default(0)
+  price Float  @default(0)
 
   // Configuración de reposición (por producto)
   stockMin     Int @default(0)
-  leadTimeDays Int @default(3)  // días que tarda el proveedor
+  leadTimeDays Int @default(3) // días que tarda el proveedor
   coverageDays Int @default(14) // días que querés cubrir (post-llegada)
-  safetyStock  Int @default(0)  // unidades extra (colchón)
+  safetyStock  Int @default(0) // unidades extra (colchón)
 
   currentStock Int @default(0)
 
   storeId String
-  store   Store @relation(fields: [storeId], references: [id])
+  store   Store  @relation(fields: [storeId], references: [id])
 
   supplierId String?
   supplier   Supplier? @relation(fields: [supplierId], references: [id])
@@ -100,7 +212,7 @@ model ProductAlias {
   key  String
 
   storeId String
-  store   Store @relation(fields: [storeId], references: [id])
+  store   Store  @relation(fields: [storeId], references: [id])
 
   productId String
   product   Product @relation(fields: [productId], references: [id])
@@ -113,7 +225,7 @@ model ProductAlias {
 }
 
 model Category {
-  id    String @id @default(cuid())
+  id    String  @id @default(cuid())
   scope String // PRODUCT | SUPPLIER | ORDER | TICKET | ...
   name  String
   slug  String
@@ -121,7 +233,7 @@ model Category {
   icon  String?
 
   storeId String
-  store   Store @relation(fields: [storeId], references: [id])
+  store   Store  @relation(fields: [storeId], references: [id])
 
   // relaciones por ámbito (por ahora: Productos)
   products Product[]
@@ -133,7 +245,6 @@ model Category {
   @@index([storeId])
   @@index([scope])
 }
-
 
 model InventoryMovement {
   id String @id @default(cuid())
@@ -147,7 +258,7 @@ model InventoryMovement {
   product   Product @relation(fields: [productId], references: [id])
 
   storeId String
-  store   Store @relation(fields: [storeId], references: [id])
+  store   Store  @relation(fields: [storeId], references: [id])
 
   // Si el movimiento fue generado por una importación de tickets,
   // lo linkeamos al lote para poder auditar y (si no hay movimientos posteriores) deshacer.
@@ -170,37 +281,35 @@ model PurchaseDraft {
   createdAt DateTime @default(now())
 
   storeId String
-  store   Store @relation(fields: [storeId], references: [id])
+  store   Store  @relation(fields: [storeId], references: [id])
 
   supplierId String?
   supplier   Supplier? @relation(fields: [supplierId], references: [id])
 
   @@index([storeId])
   @@index([supplierId])
-
 }
 
 model PurchaseOrder {
-  id        String   @id @default(cuid())
-  title     String   @default("Orden de compra")
-  status    String   @default("DRAFT") // DRAFT | SENT | PARTIAL | RECEIVED | CANCELED
-  notes     String?
+  id     String  @id @default(cuid())
+  title  String  @default("Orden de compra")
+  status String  @default("DRAFT") // DRAFT | SENT | PARTIAL | RECEIVED | CANCELED
+  notes  String?
 
   storeId String
-  store   Store @relation(fields: [storeId], references: [id])
+  store   Store  @relation(fields: [storeId], references: [id])
 
   supplierId String?
   supplier   Supplier? @relation(fields: [supplierId], references: [id])
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
   receivedAt DateTime?
 
   items PurchaseOrderItem[]
 
   @@index([storeId])
   @@index([supplierId])
-
 }
 
 model PurchaseOrderItem {
@@ -225,10 +334,10 @@ model PurchaseOrderItem {
 }
 
 model TicketImportBatch {
-  id        String   @id @default(cuid())
-  source    String   @default("CSV")
-  fileName  String?
-  notes     String?
+  id       String  @id @default(cuid())
+  source   String  @default("CSV")
+  fileName String?
+  notes    String?
 
   ticketsCount    Int @default(0)
   linesCount      Int @default(0)
@@ -239,11 +348,11 @@ model TicketImportBatch {
   unmatchedLines  Int @default(0)
 
   storeId String
-  store   Store @relation(fields: [storeId], references: [id])
+  store   Store  @relation(fields: [storeId], references: [id])
 
   importedAt DateTime @default(now())
 
-  tickets Ticket[]
+  tickets   Ticket[]
   movements InventoryMovement[]
 
   @@index([storeId])
@@ -253,7 +362,7 @@ model Ticket {
   id String @id @default(cuid())
 
   storeId String
-  store   Store @relation(fields: [storeId], references: [id])
+  store   Store  @relation(fields: [storeId], references: [id])
 
   batchId String?
   batch   TicketImportBatch? @relation(fields: [batchId], references: [id])
@@ -269,9 +378,9 @@ model Ticket {
 
   lines TicketLine[]
 
+  @@unique([storeId, hash])
   @@index([storeId])
   @@index([batchId])
-  @@unique([storeId, hash])
 }
 
 model TicketLine {
@@ -300,9 +409,9 @@ model TicketLine {
 }
 
 model AuditLog {
-  id        String   @id @default(cuid())
-  storeId   String
-  store     Store     @relation(fields: [storeId], references: [id])
+  id      String @id @default(cuid())
+  storeId String
+  store   Store  @relation(fields: [storeId], references: [id])
 
   role      String
   action    String

@@ -91,3 +91,18 @@ Solución:
 - [x] `npm run vercel-build` pasa en Linux/CI.
 - [ ] Branch protection en GitHub con check requerido `CI (vercel-build)` (paso manual fuera del repo).
 
+
+## Auth producción multi-tenant (nuevo)
+Variables nuevas:
+- `NEXTAUTH_URL` (reservada para migración futura a Auth.js)
+- `NEXTAUTH_SECRET` (reservada para migración futura a Auth.js)
+- `ALLOW_DEMO_NO_AUTH` (default recomendado: `false`; solo `true` en dev/demo)
+- `ALLOW_DEMO_SEED` (default recomendado: `false` en prod)
+
+Migración a ejecutar en producción:
+1. `npx prisma migrate deploy`
+2. `node scripts/backfill-org-franchise.mjs`
+
+Notas:
+- El local activo se resuelve por cookie `ss_active_store` y se valida contra membresías.
+- Nunca confiar en `storeId` enviado por el cliente.

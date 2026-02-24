@@ -4,23 +4,7 @@ import { validateBetaToken } from "@/lib/betaAuth";
 import { hasBetaGateConfig, isBetaGateMisconfiguredInProd } from "@/lib/betaGate";
 
 const APP_ROUTE_PREFIXES = [
-  "/dashboard",
-  "/today",
-  "/import",
-  "/stock",
-  "/orders",
-  "/products",
-  "/suppliers",
-  "/categories",
-  "/movements",
-  "/reconcile",
-  "/aliases",
-  "/assistant",
-  "/copilot",
-  "/pos",
-  "/purchases",
-  "/tickets",
-  "/logout"
+  "/dashboard", "/today", "/import", "/stock", "/orders", "/products", "/suppliers", "/categories", "/movements", "/reconcile", "/aliases", "/assistant", "/copilot", "/pos", "/purchases", "/tickets", "/logout", "/settings", "/select-store"
 ];
 
 function isProtectedPath(pathname: string) {
@@ -35,82 +19,55 @@ function getOrCreateRequestId(req: NextRequest) {
 function nextWithRequestId(req: NextRequest, requestId: string) {
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set("x-request-id", requestId);
-
-  const res = NextResponse.next({
-    request: {
-      headers: requestHeaders
-    }
-  });
-
+  const res = NextResponse.next({ request: { headers: requestHeaders } });
   res.headers.set("x-request-id", requestId);
   return res;
 }
 
-
 function unauthorizedApi(requestId: string) {
-  return NextResponse.json(
-    { ok: false, error: "Unauthorized" },
-    { status: 401, headers: { "x-request-id": requestId, "cache-control": "no-store" } }
-  );
+  return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401, headers: { "x-request-id": requestId, "cache-control": "no-store" } });
 }
 
-function blockedByBetaMisconfig(req: NextRequest, requestId: string) {
-  const isApi = req.nextUrl.pathname.startsWith("/api/");
-  if (isApi) {
-    return NextResponse.json(
-      { ok: false, error: "Beta gate no configurado en producción (faltan BETA_PASSWORD/BETA_SECRET)." },
-      { status: 503, headers: { "x-request-id": requestId, "cache-control": "no-store" } }
-    );
-  }
-
+function redirectTo(urlPath: string, req: NextRequest, requestId: string) {
   const url = req.nextUrl.clone();
-  url.pathname = "/login";
-  url.searchParams.set("misconfig", "1");
+  url.pathname = urlPath;
   const res = NextResponse.redirect(url);
   res.headers.set("x-request-id", requestId);
-  res.headers.set("cache-control", "no-store");
   return res;
 }
 
 export async function middleware(req: NextRequest) {
   const requestId = getOrCreateRequestId(req);
-  const password = process.env.BETA_PASSWORD ?? "";
-  const secret = process.env.BETA_SECRET ?? "";
+  const { pathname } = req.nextUrl;
 
-  const { pathname, search } = req.nextUrl;
   if (!isProtectedPath(pathname)) return nextWithRequestId(req, requestId);
 
-  // Producción: fail-closed para no dejar el panel abierto por error de configuración.
-  if (isBetaGateMisconfiguredInProd()) {
-    return blockedByBetaMisconfig(req, requestId);
+  const sessionToken = req.cookies.get("ss_session")?.value;
+  const activeStore = req.cookies.get("ss_active_store")?.value;
+
+  if (sessionToken) {
+    if (!activeStore && !pathname.startsWith("/select-store") && !pathname.startsWith("/api/auth")) {
+      return redirectTo("/select-store", req, requestId);
+    }
+    return nextWithRequestId(req, requestId);
   }
 
-  // Dev/demo sin vars: no aplicamos gate.
-  if (!hasBetaGateConfig()) return nextWithRequestId(req, requestId);
+  if (isBetaGateMisconfiguredInProd()) {
+    return pathname.startsWith("/api/") ? unauthorizedApi(requestId) : redirectTo("/signin", req, requestId);
+  }
+
+  if (!hasBetaGateConfig()) {
+    if (process.env.ALLOW_DEMO_NO_AUTH === "true" && process.env.NODE_ENV !== "production") {
+      return nextWithRequestId(req, requestId);
+    }
+    return pathname.startsWith("/api/") ? unauthorizedApi(requestId) : redirectTo("/signin", req, requestId);
+  }
 
   const token = req.cookies.get("ss_beta")?.value || "";
-  const ok = token ? await validateBetaToken(secret, token) : false;
-
+  const ok = token ? await validateBetaToken(process.env.BETA_SECRET ?? "", token) : false;
   if (ok) return nextWithRequestId(req, requestId);
 
-  if (pathname.startsWith("/api/")) {
-    return unauthorizedApi(requestId);
-  }
-
-  const url = req.nextUrl.clone();
-  url.pathname = "/login";
-  // guardamos destino para volver después
-  url.searchParams.set("next", `${pathname}${search}`);
-
-  const res = NextResponse.redirect(url);
-  res.headers.set("x-request-id", requestId);
-  res.headers.set("cache-control", "no-store");
-  return res;
+  return pathname.startsWith("/api/") ? unauthorizedApi(requestId) : redirectTo("/login", req, requestId);
 }
 
-export const config = {
-  matcher: [
-    // todo menos assets internos
-    "/((?!_next/static|_next/image|favicon.ico).*)"
-  ]
-};
+export const config = { matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"] };

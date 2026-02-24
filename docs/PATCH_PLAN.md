@@ -402,3 +402,9 @@ Reducir churn: “primer resultado” rápido.
 3) Importar archivo de prueba
 4) Undo batch (si aplica)
 5) Probar IA (si aplica)
+
+### Estado parcial P38 (auth-prod-multitenant)
+- Implementado: modelos multi-tenant + sesiones DB + selección de store activa.
+- Implementado: helpers server-side `requireUser/requireOrgAccess/requireStoreAccess/requireActiveStore`.
+- Implementado: enforcement inicial en APIs de `products`, `movements`, `categories` ignorando `storeId` del cliente.
+- Pendiente: integración completa Auth.js/NextAuth (bloqueada por política de paquetes del entorno).
