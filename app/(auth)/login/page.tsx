@@ -1,4 +1,5 @@
 import { betaLogin } from "./actions";
+import { isBetaGateMisconfiguredInProd } from "@/lib/betaGate";
 import { Button, Card, CardContent, CardHeader, CardTitle, CardDescription, Input, Label } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
@@ -9,7 +10,7 @@ export default async function LoginPage({
   searchParams?: { error?: string; misconfig?: string; next?: string };
 }) {
   const showError = searchParams?.error === "1";
-  const envMisconfigured = process.env.NODE_ENV === "production" && (!process.env.BETA_PASSWORD || !process.env.BETA_SECRET);
+  const envMisconfigured = isBetaGateMisconfiguredInProd();
   const showMisconfig = searchParams?.misconfig === "1" || envMisconfigured;
   const nextRaw = searchParams?.next ?? "/dashboard";
   const nextPath = nextRaw.startsWith("/") && !nextRaw.startsWith("//") ? nextRaw : "/dashboard";

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { validateBetaToken } from "@/lib/betaAuth";
+import { hasBetaGateConfig, isBetaGateMisconfiguredInProd } from "@/lib/betaGate";
 
 const APP_ROUTE_PREFIXES = [
   "/dashboard",
@@ -73,19 +74,19 @@ function blockedByBetaMisconfig(req: NextRequest, requestId: string) {
 
 export async function middleware(req: NextRequest) {
   const requestId = getOrCreateRequestId(req);
-  const password = process.env.BETA_PASSWORD;
-  const secret = process.env.BETA_SECRET;
+  const password = process.env.BETA_PASSWORD ?? "";
+  const secret = process.env.BETA_SECRET ?? "";
 
   const { pathname, search } = req.nextUrl;
   if (!isProtectedPath(pathname)) return nextWithRequestId(req, requestId);
 
   // Producción: fail-closed para no dejar el panel abierto por error de configuración.
-  if (process.env.NODE_ENV === "production" && (!password || !secret)) {
+  if (isBetaGateMisconfiguredInProd()) {
     return blockedByBetaMisconfig(req, requestId);
   }
 
   // Dev/demo sin vars: no aplicamos gate.
-  if (!password || !secret) return nextWithRequestId(req, requestId);
+  if (!hasBetaGateConfig()) return nextWithRequestId(req, requestId);
 
   const token = req.cookies.get("ss_beta")?.value || "";
   const ok = token ? await validateBetaToken(secret, token) : false;

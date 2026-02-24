@@ -3,17 +3,18 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { issueBetaToken } from "@/lib/betaAuth";
+import { hasBetaGateConfig, isBetaGateMisconfiguredInProd } from "@/lib/betaGate";
 
 export async function betaLogin(formData: FormData) {
   const password = String(formData.get("password") ?? "");
   const nextRaw = String(formData.get("next") ?? "");
   const nextPath = nextRaw.startsWith("/") && !nextRaw.startsWith("//") ? nextRaw : "/dashboard";
 
-  const expected = process.env.BETA_PASSWORD;
-  const secret = process.env.BETA_SECRET;
+  const expected = process.env.BETA_PASSWORD ?? "";
+  const secret = process.env.BETA_SECRET ?? "";
 
-  if (!expected || !secret) {
-    if (process.env.NODE_ENV === "production") {
+  if (!hasBetaGateConfig()) {
+    if (isBetaGateMisconfiguredInProd()) {
       redirect("/login?misconfig=1");
     }
 
