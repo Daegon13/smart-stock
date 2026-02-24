@@ -46,49 +46,11 @@ export async function GET(req: Request) {
     select: { productId: true, type: true, qty: true, createdAt: true }
   });
 
-  const salesMovements = movements.filter((m) => m.type === "OUT");
-  const productsMissingConfig = products.filter(
-    (p) => (p.stockMin ?? 0) <= 0 || (p.coverageDays ?? 0) <= 0 || (p.leadTimeDays ?? 0) <= 0
-  ).length;
-
-  const alerts = {
-    negativeStock: products
-      .filter((p) => p.currentStock < 0)
-      .map((p) => ({ productId: p.id, name: p.name, currentStock: p.currentStock })),
-    anomalousMovements: [] as Array<{ productId: string; name: string; movementId: string; qty: number; threshold: number }>
-  };
-
-  const recent = await prisma.inventoryMovement.findMany({
-    where: { storeId },
-    orderBy: { createdAt: "desc" },
-    take: 500,
-    select: { id: true, productId: true, qty: true, type: true, createdAt: true, product: { select: { name: true } } }
-  });
-
-  const byProduct = new Map<string, number[]>();
-  for (const m of recent) {
-    const qty = Math.max(0, m.qty);
-    if (qty <= 0) continue;
-    const arr = byProduct.get(m.productId) || [];
-    arr.push(qty);
-    byProduct.set(m.productId, arr);
-  }
-
-  for (const m of recent) {
-    const values = byProduct.get(m.productId) || [];
-    if (values.length < 5) continue;
-    const avg = values.reduce((a, b) => a + b, 0) / values.length;
-    const threshold = Math.max(10, avg * 4);
-    if (m.qty > threshold) {
-      alerts.anomalousMovements.push({
-        productId: m.productId,
-        name: m.product?.name || "Producto",
-        movementId: m.id,
-        qty: m.qty,
-        threshold: Math.round(threshold)
-      });
-    }
-  }
+  // Meta para “empty states” inteligentes.
+  const lb = Number.isFinite(lookbackDays) ? lookbackDays : 30;
+  const from = Date.now() - lb * 24 * 60 * 60 * 1000;
+  const outMovementsCount = movements.filter((m) => m.type === "OUT" && new Date(m.createdAt).getTime() >= from).length;
+  const productsMissingMinCount = products.filter((p) => (p.stockMin ?? 0) <= 0).length;
 
   const mappedProducts = products.map(({ supplier, ...p }) => ({
     ...p,
@@ -103,12 +65,13 @@ export async function GET(req: Request) {
     safetyStock: Number.isFinite(fallbackSafety) ? fallbackSafety : 0
   });
 
-  const readiness = {
-    productCount: products.length,
-    salesCount: salesMovements.length,
-    productsMissingConfig
-  };
-
-  logApiEvent({ requestId, route: "/api/stock/suggestions", method: "GET", storeId, status: 200, message: `suggestions=${suggestions.length}` });
-  return json({ suggestions, alerts, readiness });
+  return NextResponse.json({
+    suggestions,
+    meta: {
+      productCount: products.length,
+      outMovementsCount,
+      productsMissingMinCount,
+      lookbackDays: lb
+    }
+  });
 }
