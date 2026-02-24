@@ -123,7 +123,7 @@ function groupBySupplier(items: SuggestionDTO[]): SupplierGroup[] {
     });
 }
 
-export function StockIntelligence({ storeId, storeName }: { storeId: string; storeName?: string }) {
+export function StockIntelligence({ storeId, storeName, demoAllowed }: { storeId: string; storeName?: string; demoAllowed: boolean }) {
   const [items, setItems] = React.useState<SuggestionDTO[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [err, setErr] = React.useState<string | null>(null);
@@ -478,13 +478,17 @@ export function StockIntelligence({ storeId, storeName }: { storeId: string; sto
           {readiness.productCount === 0 && !loading ? (
             <div className="space-y-2">
               <div className="text-sm text-slate-600">Todavía no hay productos en este local.</div>
-              <div className="text-xs text-slate-500">Creá productos o cargá datos demo para ver sugerencias reales.</div>
+              <div className="text-xs text-slate-500">Creá productos para empezar a ver sugerencias reales.</div>
               <div className="flex flex-wrap gap-2">
                 <Link className="underline" href="/products">
                   Crear productos
                 </Link>
-                <span className="text-slate-400">·</span>
-                <DemoSeedButton variant="ghost" />
+                {demoAllowed ? (
+                  <>
+                    <span className="text-slate-400">·</span>
+                    <DemoSeedButton variant="ghost" />
+                  </>
+                ) : null}
               </div>
             </div>
           ) : items.length === 0 && !loading ? (

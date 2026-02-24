@@ -49,7 +49,7 @@ const defaults = {
   currentStock: "0"
 };
 
-export function ProductManager({ storeId, initial }: { storeId: string; initial: ProductDTO[] }) {
+export function ProductManager({ storeId, initial, demoAllowed }: { storeId: string; initial: ProductDTO[]; demoAllowed: boolean }) {
   const [items, setItems] = React.useState<ProductDTO[]>(initial);
 const [cats, setCats] = React.useState<{ id: string; name: string; icon: string | null }[]>([]);
   const [newCat, setNewCat] = React.useState("");
@@ -292,7 +292,7 @@ const [cats, setCats] = React.useState<{ id: string; name: string; icon: string 
               <div className="space-y-2">
                 <div className="text-sm text-slate-600">Todavía no hay productos.</div>
                 <div className="text-xs text-slate-500">Tip: cargá tus primeros productos para activar reposición y pedidos.</div>
-                <DemoSeedButton variant="ghost" />
+                {demoAllowed ? <DemoSeedButton variant="ghost" /> : null}
               </div>
             ) : (
               items.map((p) => (

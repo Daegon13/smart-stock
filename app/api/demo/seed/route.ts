@@ -2,6 +2,8 @@ import type { Supplier } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getOrCreateDefaultStore } from "@/lib/defaultStore";
+import { isDemoAllowed } from "@/lib/demoGate";
+import { getRequestId, logApiEvent } from "@/lib/observability";
 
 export const dynamic = "force-dynamic";
 
@@ -46,14 +48,21 @@ function cfgByCategory(category: string | null) {
   }
 }
 
-export async function POST() {
+export async function POST(req: Request) {
+  const requestId = getRequestId(req);
+  const json = (body: SeedResult, status = 200) =>
+    NextResponse.json(body, { status, headers: { "x-request-id": requestId, "cache-control": "no-store" } });
   // Seguridad: el endpoint de seed demo NO debería estar disponible en producción.
   // Para habilitarlo explícitamente (solo bajo tu responsabilidad), setear ALLOW_DEMO_SEED=true.
-  if (process.env.NODE_ENV === "production" && process.env.ALLOW_DEMO_SEED !== "true") {
-    return NextResponse.json(
-      { ok: false, message: "Seed demo deshabilitado en producción." } satisfies SeedResult,
-      { status: 403 }
-    );
+  if (!isDemoAllowed()) {
+    logApiEvent({
+      requestId,
+      route: "/api/demo/seed",
+      method: "POST",
+      status: 403,
+      message: "blocked by demo gate"
+    });
+    return json({ ok: false, message: "Seed demo deshabilitado en producción." } satisfies SeedResult, 403);
   }
 
   const store = await getOrCreateDefaultStore();
@@ -63,7 +72,15 @@ export async function POST() {
       ok: false,
       message: "Ya existen productos en este local. (Para no pisarte datos, el seed demo solo corre si está vacío.)"
     };
-    return NextResponse.json(body, { status: 409 });
+    logApiEvent({
+      requestId,
+      route: "/api/demo/seed",
+      method: "POST",
+      storeId: store.id,
+      status: 409,
+      message: "seed skipped: store not empty"
+    });
+    return json(body, 409);
   }
 
   // Renombramos el store por estética, sin crear uno nuevo
@@ -238,5 +255,14 @@ export async function POST() {
     created: { suppliers: suppliers.length, products: createdProducts.length, movements: createdMov.count }
   };
 
-  return NextResponse.json(body, { status: 201 });
+  logApiEvent({
+    requestId,
+    route: "/api/demo/seed",
+    method: "POST",
+    storeId: store.id,
+    status: 201,
+    message: `seed ok (suppliers=${suppliers.length}, products=${createdProducts.length}, movements=${createdMov.count})`
+  });
+
+  return json(body, 201);
 }
