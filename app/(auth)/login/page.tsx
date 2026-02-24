@@ -6,9 +6,10 @@ export const dynamic = "force-dynamic";
 export default async function LoginPage({
   searchParams
 }: {
-  searchParams?: { error?: string; next?: string };
+  searchParams?: { error?: string; misconfig?: string; next?: string };
 }) {
   const showError = searchParams?.error === "1";
+  const showMisconfig = searchParams?.misconfig === "1";
   const nextRaw = searchParams?.next ?? "/dashboard";
   const nextPath = nextRaw.startsWith("/") && !nextRaw.startsWith("//") ? nextRaw : "/dashboard";
 
@@ -29,6 +30,9 @@ export default async function LoginPage({
               <Input id="password" name="password" type="password" autoFocus placeholder="••••••••" />
               {showError && (
                 <p className="text-sm text-rose-600">Clave incorrecta.</p>
+              )}
+              {showMisconfig && (
+                <p className="text-sm text-amber-700">Falta configurar BETA_PASSWORD/BETA_SECRET en producción.</p>
               )}
             </div>
             <Button type="submit" className="w-full">

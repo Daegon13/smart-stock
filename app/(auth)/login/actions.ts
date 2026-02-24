@@ -13,6 +13,10 @@ export async function betaLogin(formData: FormData) {
   const secret = process.env.BETA_SECRET;
 
   if (!expected || !secret) {
+    if (process.env.NODE_ENV === "production") {
+      redirect("/login?misconfig=1");
+    }
+
     // Si no está configurado, no bloqueamos (modo dev/demo)
     cookies().set("ss_beta", "", { path: "/", maxAge: 0 });
     redirect(nextPath);
