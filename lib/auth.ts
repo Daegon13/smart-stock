@@ -26,8 +26,14 @@ export function hashPassword(password: string) {
 export function verifyPassword(password: string, hash: string) {
   const [algo, salt, expected] = hash.split(":");
   if (algo !== "scrypt" || !salt || !expected) return false;
-  const derived = crypto.scryptSync(password, salt, 64).toString("hex");
-  return crypto.timingSafeEqual(Buffer.from(derived), Buffer.from(expected));
+
+  try {
+    const derived = crypto.scryptSync(password, salt, 64).toString("hex");
+    if (derived.length !== expected.length) return false;
+    return crypto.timingSafeEqual(Buffer.from(derived), Buffer.from(expected));
+  } catch {
+    return false;
+  }
 }
 
 export async function createDbSession(userId: string) {
@@ -55,27 +61,30 @@ export async function getUserSession(): Promise<UserSession | null> {
   const token = cookies().get(SESSION_COOKIE)?.value;
   if (!token) return null;
 
-  const session = await prisma.session.findUnique({
-    where: { sessionToken: token },
-    include: { user: true }
-  });
-  if (!session || session.expires < new Date()) {
+  try {
+    const session = await prisma.session.findUnique({
+      where: { sessionToken: token },
+      include: { user: true }
+    });
+    if (!session || session.expires < new Date()) {
+      cookies().set(SESSION_COOKIE, "", { path: "/", maxAge: 0 });
+      return null;
+    }
+
+    return {
+      userId: session.userId,
+      email: session.user.email,
+      name: session.user.name,
+      sessionToken: session.sessionToken
+    };
+  } catch {
+    // Compatibilidad: si la migración de auth aún no está aplicada, evitamos romper toda la app.
     cookies().set(SESSION_COOKIE, "", { path: "/", maxAge: 0 });
     return null;
   }
-
-  return {
-    userId: session.userId,
-    email: session.user.email,
-    name: session.user.name,
-    sessionToken: session.sessionToken
-  };
 }
 
 export async function requireUser() {
-  const session = await getUserSession();
-  if (session) return session;
-
   if (isDevLoginBypassEnabled() || (process.env.ALLOW_DEMO_NO_AUTH === "true" && process.env.NODE_ENV !== "production")) {
     return {
       userId: "demo-user",
@@ -84,6 +93,9 @@ export async function requireUser() {
       sessionToken: "demo"
     };
   }
+
+  const session = await getUserSession();
+  if (session) return session;
 
   redirect("/signin");
 }
@@ -102,9 +114,12 @@ export async function requireOrgAccess(orgId: string) {
 export async function requireStoreAccess(storeId: string) {
   const user = await requireUser();
   if (user.userId === "demo-user") {
-    const demo = await prisma.store.findFirst({ orderBy: { createdAt: "asc" } });
+    const demo = await prisma.store.findFirst({
+      orderBy: { createdAt: "asc" },
+      select: { id: true }
+    });
     if (!demo) redirect("/select-store");
-    return { orgId: demo.organizationId || "", franchiseId: demo.franchiseId || "", storeId: demo.id, role: "OWNER" as AuthRole };
+    return { orgId: "", franchiseId: "", storeId: demo.id, role: "OWNER" as AuthRole };
   }
 
   const store = await prisma.store.findUnique({ where: { id: storeId } });
@@ -139,7 +154,10 @@ export async function getActiveStoreFromSession() {
   }
 
   if (isDevLoginBypassEnabled() || (process.env.ALLOW_DEMO_NO_AUTH === "true" && process.env.NODE_ENV !== "production")) {
-    const demo = await prisma.store.findFirst({ orderBy: { createdAt: "asc" } });
+    const demo = await prisma.store.findFirst({
+      orderBy: { createdAt: "asc" },
+      select: { id: true, name: true, createdAt: true, updatedAt: true }
+    });
     if (demo) return demo;
   }
 
