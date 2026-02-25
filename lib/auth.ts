@@ -26,14 +26,8 @@ export function hashPassword(password: string) {
 export function verifyPassword(password: string, hash: string) {
   const [algo, salt, expected] = hash.split(":");
   if (algo !== "scrypt" || !salt || !expected) return false;
-
-  try {
-    const derived = crypto.scryptSync(password, salt, 64).toString("hex");
-    if (derived.length !== expected.length) return false;
-    return crypto.timingSafeEqual(Buffer.from(derived), Buffer.from(expected));
-  } catch {
-    return false;
-  }
+  const derived = crypto.scryptSync(password, salt, 64).toString("hex");
+  return crypto.timingSafeEqual(Buffer.from(derived), Buffer.from(expected));
 }
 
 export async function createDbSession(userId: string) {

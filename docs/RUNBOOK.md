@@ -99,7 +99,7 @@ Variables nuevas:
 - `ALLOW_DEMO_NO_AUTH` (default recomendado: `false`; solo `true` en dev/demo)
 - `ALLOW_DEMO_SEED` (default recomendado: `false` en prod)
 - `ALLOW_AUTH_BOOTSTRAP` (default `false`; solo dev para crear owner inicial por API)
-- `AUTH_LOGIN_ENABLED` (default `true`; si `false`, bypass de login habilitado en local y en Vercel Preview; en Vercel Production se mantiene login)
+- `AUTH_LOGIN_ENABLED` (default `true`; si `false` en dev, omite login para seguir iterando parches)
 
 Migración a ejecutar en producción:
 1. `npx prisma migrate deploy`
@@ -108,6 +108,3 @@ Migración a ejecutar en producción:
 Notas:
 - El local activo se resuelve por cookie `ss_active_store` y se valida contra membresías.
 - Nunca confiar en `storeId` enviado por el cliente.
-
-
-IMPORTANTE: al cambiar env vars en Vercel, hacé redeploy para que tomen efecto.
