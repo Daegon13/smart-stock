@@ -16,9 +16,12 @@
     "db:seed:maybe": "node scripts/seed-maybe.mjs",
     "use:postgres": "node scripts/use-postgres.mjs",
     "dev:pg": "npm run use:postgres && prisma generate && prisma db push && next dev",
-    "vercel-build": "npm run use:postgres && prisma generate && next build",
+    "vercel-build": "npm run db:migrate:deploy && npm run auth:bootstrap:maybe && next build",
     "db:deploy": "npm run use:postgres && prisma generate && prisma db push && npm run db:seed:maybe",
-    "db:generate": "prisma generate"
+    "db:generate": "prisma generate",
+    "auth:bootstrap": "ts-node --transpile-only scripts/bootstrap-admin.ts",
+    "auth:bootstrap:maybe": "node scripts/bootstrap-admin-maybe.mjs",
+    "db:migrate:deploy": "npm run use:postgres && prisma generate && prisma migrate deploy"
   },
   "dependencies": {
     "@prisma/client": "^5.16.0",
