@@ -86,5 +86,7 @@ npx prisma migrate dev --name <nombre>
 
 Producción (Vercel):
 ```bash
-npx prisma migrate deploy
+npm run db:migrate:deploy
 ```
+
+> Nota: si la DB de producción fue creada originalmente con `prisma db push`, `prisma migrate deploy` puede fallar con P3005 (schema no vacío). El script `db:migrate:deploy` ahora hace fallback automático a `prisma db push` **solo** en ese caso, y mantiene el error para cualquier otro fallo real.

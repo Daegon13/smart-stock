@@ -18,7 +18,8 @@
     "dev:pg": "npm run use:postgres && prisma generate && prisma db push && next dev",
     "vercel-build": "npm run use:postgres && prisma generate && next build",
     "db:deploy": "npm run use:postgres && prisma generate && prisma db push && npm run db:seed:maybe",
-    "db:generate": "prisma generate"
+    "db:generate": "prisma generate",
+    "db:migrate:deploy": "node scripts/db-migrate-deploy-safe.mjs"
   },
   "dependencies": {
     "@prisma/client": "^5.16.0",
