@@ -1,3 +1,5 @@
+import { requireActiveStore } from "@/lib/auth";
+
 function parseBoolEnv(value: string | undefined, defaultValue: boolean) {
   if (value == null) return defaultValue;
   const v = value.trim().toLowerCase();
@@ -21,4 +23,25 @@ export function isLoginSystemEnabled() {
  */
 export function isDevLoginBypassEnabled() {
   return !isLoginSystemEnabled();
+}
+
+export async function withActiveStore<T>(
+  handler: (ctx: {
+    storeId: string;
+    orgId: string;
+    franchiseId: string;
+    role: string;
+  }) => Promise<T>,
+): Promise<T> {
+  const ctx = await requireActiveStore();
+  return handler({
+    storeId: ctx.storeId,
+    orgId: ctx.orgId,
+    franchiseId: ctx.franchiseId,
+    role: ctx.role,
+  });
+}
+
+export function canMutate(role: string): boolean {
+  return role !== "READONLY";
 }
