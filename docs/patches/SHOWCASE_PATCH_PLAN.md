@@ -236,6 +236,12 @@ Entregá resumen, archivos tocados, diff y resultado del build.
 - La producción no queda accidentalmente abierta.
 - El showcase público queda habilitable explícitamente.
 
+### Implementación PATCH 01
+
+- Fuente central de flags: `lib/runtimeFlags.ts`.
+- Documentación de envs: `.env.example` y `docs/ENVIRONMENT.md`.
+- Para showcase público read-only usar `SHOWCASE_MODE=true`, `NEXT_PUBLIC_SHOWCASE_MODE=true`, `SHOWCASE_READONLY=true`, `AUTH_LOGIN_ENABLED=false` y, si aplica, `DEMO_STORE_ID=<store estable>`.
+
 ---
 
 ## PATCH 02 — Modo público sin login y sin select-store
