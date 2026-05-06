@@ -10,7 +10,7 @@ If no showcase variables are set, the app defaults to the safer SaaS path:
 AUTH_LOGIN_ENABLED=true
 SHOWCASE_MODE=false
 NEXT_PUBLIC_SHOWCASE_MODE=false
-SHOWCASE_READONLY=true
+SHOWCASE_READONLY=false
 ```
 
 In this mode, login/beta-gate protection remains enabled and production is not opened by accident.
@@ -29,7 +29,7 @@ ALLOW_DEMO_NO_AUTH=false
 ALLOW_DEMO_SEED=false
 ```
 
-`SHOWCASE_READONLY` defaults to `true` whenever `SHOWCASE_MODE=true`, unless explicitly set to `false` for a controlled private demo.
+`SHOWCASE_MODE` is the server-side switch that can bypass login. `NEXT_PUBLIC_SHOWCASE_MODE` is only for client-visible showcase UI. `SHOWCASE_READONLY` defaults to `true` whenever `SHOWCASE_MODE=true`, unless explicitly set to `false` for a controlled private demo.
 
 ## Private writable demo mode
 
@@ -48,3 +48,4 @@ DEMO_STORE_ID=<stable demo store id>
 - `ALLOW_DEMO_NO_AUTH=true` still allows no-auth demo access only outside production.
 - `ALLOW_DEMO_SEED=true` remains the explicit production override for demo seed endpoints.
 - `BETA_PASSWORD` and `BETA_SECRET` still configure the beta gate when showcase mode is off.
+- `DEMO_STORE_ID`/`SHOWCASE_STORE_ID` is only preferred while login bypass/showcase mode is active; SaaS sessions keep using the active store cookie.

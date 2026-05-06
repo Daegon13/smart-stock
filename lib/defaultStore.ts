@@ -1,12 +1,14 @@
 import { getActiveStoreFromSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { getDefaultShowcaseStoreId, isDemoNoAuthAllowed } from "@/lib/runtimeFlags";
+import { getDefaultShowcaseStoreId, isDemoNoAuthAllowed, shouldBypassLogin } from "@/lib/runtimeFlags";
 
 export async function getOrCreateDefaultStore() {
-  const configuredStoreId = getDefaultShowcaseStoreId();
-  if (configuredStoreId) {
-    const configured = await prisma.store.findUnique({ where: { id: configuredStoreId } });
-    if (configured) return configured;
+  if (shouldBypassLogin()) {
+    const configuredStoreId = getDefaultShowcaseStoreId();
+    if (configuredStoreId) {
+      const configured = await prisma.store.findUnique({ where: { id: configuredStoreId } });
+      if (configured) return configured;
+    }
   }
 
   if (isDemoNoAuthAllowed()) {

@@ -23,15 +23,15 @@ export function isLoginSystemEnabled() {
 }
 
 export function isShowcaseMode() {
-  return parseBoolEnv(process.env.SHOWCASE_MODE ?? process.env.NEXT_PUBLIC_SHOWCASE_MODE, false);
+  return parseBoolEnv(process.env.SHOWCASE_MODE, false);
 }
 
 export function isPublicShowcaseMode() {
-  return isShowcaseMode();
+  return parseBoolEnv(process.env.NEXT_PUBLIC_SHOWCASE_MODE, isShowcaseMode());
 }
 
 export function isShowcaseReadonly() {
-  if (!isShowcaseMode()) return parseBoolEnv(process.env.SHOWCASE_READONLY, false);
+  if (!isShowcaseMode()) return false;
   return parseBoolEnv(process.env.SHOWCASE_READONLY, true);
 }
 
