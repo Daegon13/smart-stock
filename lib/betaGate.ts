@@ -1,5 +1,7 @@
+import { hasBetaGateCredentials } from "@/lib/runtimeFlags";
+
 export function hasBetaGateConfig() {
-  return Boolean(process.env.BETA_PASSWORD && process.env.BETA_SECRET);
+  return hasBetaGateCredentials();
 }
 
 export function isBetaGateMisconfiguredInProd() {

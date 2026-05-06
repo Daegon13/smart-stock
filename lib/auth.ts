@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import crypto from "crypto";
 import { prisma } from "@/lib/db";
 import { isDevLoginBypassEnabled } from "@/lib/authFlags";
+import { getDefaultShowcaseStoreId, isDemoNoAuthAllowed } from "@/lib/runtimeFlags";
 
 export const ACTIVE_STORE_COOKIE = "ss_active_store";
 const SESSION_COOKIE = "ss_session";
@@ -85,7 +86,7 @@ export async function getUserSession(): Promise<UserSession | null> {
 }
 
 export async function requireUser() {
-  if (isDevLoginBypassEnabled() || (process.env.ALLOW_DEMO_NO_AUTH === "true" && process.env.NODE_ENV !== "production")) {
+  if (isDevLoginBypassEnabled() || isDemoNoAuthAllowed()) {
     return {
       userId: "demo-user",
       email: "demo@localhost",
@@ -153,11 +154,17 @@ export async function getActiveStoreFromSession() {
     }
   }
 
-  if (isDevLoginBypassEnabled() || (process.env.ALLOW_DEMO_NO_AUTH === "true" && process.env.NODE_ENV !== "production")) {
-    const demo = await prisma.store.findFirst({
-      orderBy: { createdAt: "asc" },
-      select: { id: true, name: true, createdAt: true, updatedAt: true }
-    });
+  if (isDevLoginBypassEnabled() || isDemoNoAuthAllowed()) {
+    const configuredStoreId = getDefaultShowcaseStoreId();
+    const demo = configuredStoreId
+      ? await prisma.store.findUnique({
+          where: { id: configuredStoreId },
+          select: { id: true, name: true, createdAt: true, updatedAt: true }
+        })
+      : await prisma.store.findFirst({
+          orderBy: { createdAt: "asc" },
+          select: { id: true, name: true, createdAt: true, updatedAt: true }
+        });
     if (demo) return demo;
   }
 

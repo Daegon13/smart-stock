@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { validateBetaToken } from "@/lib/betaAuth";
 import { hasBetaGateConfig, isBetaGateMisconfiguredInProd } from "@/lib/betaGate";
 import { isDevLoginBypassEnabled } from "@/lib/authFlags";
+import { isDemoNoAuthAllowed } from "@/lib/runtimeFlags";
 
 const APP_ROUTE_PREFIXES = [
   "/dashboard", "/today", "/import", "/stock", "/orders", "/products", "/suppliers", "/categories", "/movements", "/reconcile", "/aliases", "/assistant", "/copilot", "/pos", "/purchases", "/tickets", "/logout", "/settings", "/select-store"
@@ -62,7 +63,7 @@ export async function middleware(req: NextRequest) {
   }
 
   if (!hasBetaGateConfig()) {
-    if (process.env.ALLOW_DEMO_NO_AUTH === "true" && process.env.NODE_ENV !== "production") {
+    if (isDemoNoAuthAllowed()) {
       return nextWithRequestId(req, requestId);
     }
     return pathname.startsWith("/api/") ? unauthorizedApi(requestId) : redirectTo("/signin", req, requestId);

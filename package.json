@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "typecheck": "tsc --noEmit",
     "build": "prisma generate && prisma db push && npm run db:seed:maybe && next build",
     "start": "next start",
     "lint": "next lint",
