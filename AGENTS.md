@@ -1,20 +1,47 @@
-# AGENTS.md — Smart Stock (Marin)
+# AGENTS.md — Smart Stock
 
-## Objetivo
-MVP de stock inteligente (Next.js 14 + Prisma/Postgres + Vercel).
-Prioridad: estabilidad de build/deploy, seguridad básica (beta gate), import confiable y reversible.
+## Project goal
 
-## Reglas de trabajo
-- Cambios pequeños por PR (1 objetivo).
-- Siempre correr: `npm run vercel-build` antes de terminar.
-- No introduzcas nuevas librerías si no es imprescindible.
-- Respeta el plan de parches (ver docs/PATCH_PLAN.md).
-- Si tocás Prisma: asegurar relaciones bidireccionales, correr `prisma format`, y crear migración cuando aplique.
+Smart Stock is being prepared as a public technical showcase.
 
-## Comandos
-- Build prod: `npm run vercel-build`
-- Prisma: `npx prisma format`, `npx prisma migrate dev`, `npx prisma migrate deploy`
+The immediate goal is NOT to finish real email authentication.
+The immediate goal is to make the app stable, presentable, and safe to show publicly.
 
-## Entorno
-- Vercel + Postgres
-- Windows local (case-insensitive), Vercel Linux (case-sensitive): ojo con imports.
+## Current strategy
+
+Work from:
+
+`docs/patches/SHOWCASE_PATCH_PLAN.md`
+
+Implement the plan in small patches, one branch/PR per patch.
+
+## Hard rules
+
+- Do not implement full email auth unless explicitly requested.
+- Do not rewrite the app architecture.
+- Do not mix multiple patches in one PR.
+- Keep changes minimal and verifiable.
+- Preserve a clean path to resume real SaaS auth later.
+- Prefer feature flags over deleting unfinished auth code.
+- Public showcase mode must not allow dangerous shared-data mutations.
+
+## Verification
+
+Before marking a patch as done, run the available checks from package.json, prioritizing:
+
+- typecheck
+- lint
+- build
+- vercel-build, if present
+
+If a command fails, report the exact error and fix it if it belongs to the current patch.
+
+## Patch completion report
+
+At the end of every patch, summarize:
+
+1. Files changed.
+2. What was fixed or implemented.
+3. Commands run.
+4. Known risks.
+5. Next recommended patch.
