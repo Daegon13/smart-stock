@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
 import { Badge, Button, Sticker } from "@/components/ui";
+import { isClientShowcaseReadonly, PUBLIC_CONTACT_URL } from "@/lib/clientShowcase";
 
 type NavItem = { href: string; label: string; icon: string; hint?: string };
 
@@ -96,6 +97,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const showDevBanners =
     process.env.NODE_ENV !== "production" || process.env.NEXT_PUBLIC_SHOW_DEV_BANNERS === "true";
   const showShowcaseBanner = process.env.NEXT_PUBLIC_SHOWCASE_MODE === "true";
+  const showcaseReadonly = isClientShowcaseReadonly();
 
   React.useEffect(() => {
     setMobileOpen(false);
@@ -143,7 +145,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <Sticker tone="purple">✨</Sticker>
                 <div>
                   <div className="text-sm font-bold text-slate-900">SmartStock</div>
-                  <div className="text-xs text-slate-500">Inventario simple</div>
+                  <div className="text-xs text-slate-500">Inventario y reposición</div>
                 </div>
               </Link>
               {showShowcaseBanner ? <Badge tone="amber">Showcase público</Badge> : showDevBanners ? <Badge tone="slate">MVP</Badge> : null}
@@ -208,8 +210,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </div>
 
                 {showShowcaseBanner ? (
-                  <div className="mt-3 text-[11px] text-amber-700">
-                    Showcase público: usando contexto demo de Minimarket Demo.
+                  <div className="mt-3 space-y-1 text-[11px] text-amber-800">
+                    <div>Demo pública: datos ficticios de Minimarket Demo.</div>
+                    <div>{showcaseReadonly ? "Modo solo lectura: mutaciones desactivadas." : "Modo demo editable para entorno controlado."}</div>
+                    <Link href="/about-demo" className="font-semibold underline underline-offset-2">
+                      Recorrido técnico · MarinDev
+                    </Link>
                   </div>
                 ) : showDevBanners ? (
                   <div className="mt-3 text-[11px] text-slate-500">
@@ -224,8 +230,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {/* Main */}
         <main className="p-4 md:p-6 ss-section">
           {showShowcaseBanner ? (
-            <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-              <strong>Modo demo · Showcase público.</strong> Navegás con datos de ejemplo y una tienda demo por defecto.
+            <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+              <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <strong>Demo pública{showcaseReadonly ? " — modo solo lectura" : ""}.</strong> Datos ficticios para muestra técnica; la escritura está {showcaseReadonly ? "desactivada para mantener la demo limpia" : "habilitada solo en este entorno"}.
+                </div>
+                <div className="flex flex-wrap gap-3 text-xs font-semibold">
+                  <Link href="/about-demo" className="underline underline-offset-2">
+                    Ver recorrido técnico
+                  </Link>
+                  <a href={PUBLIC_CONTACT_URL} className="underline underline-offset-2">
+                    MarinDev · contacto
+                  </a>
+                </div>
+              </div>
             </div>
           ) : null}
           {children}
