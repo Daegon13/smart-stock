@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
+import { rejectMutationInShowcase } from "@/lib/showcaseReadonlyGuard";
 import { prisma } from "@/lib/db";
 import { getRequestId, logApiEvent } from "@/lib/observability";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
+  const readonlyResponse = rejectMutationInShowcase(req.method);
+  if (readonlyResponse) return readonlyResponse;
   const requestId = getRequestId(req);
   const body = await req.json().catch(() => null);
   const storeId = String(body?.storeId || "");

@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { getOrCreateDefaultStore } from "@/lib/defaultStore";
 import { normalizeRole, type Role } from "@/lib/rbac";
 import { isLoginSystemEnabled, isAuthBypassAllowed, isShowcaseReadonly } from "@/lib/runtimeFlags";
+export { SHOWCASE_READONLY_MESSAGE, rejectMutationInShowcase } from "@/lib/showcaseReadonlyGuard";
 
 export type ApiRole = Role | "ADMIN" | "MANAGER" | "OWNER" | "READONLY" | "STAFF";
 

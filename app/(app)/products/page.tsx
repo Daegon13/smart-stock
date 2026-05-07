@@ -1,10 +1,12 @@
 import { prisma } from "@/lib/db";
 import { getOrCreateDefaultStore } from "@/lib/defaultStore";
+import { isShowcaseReadonly } from "@/lib/runtimeFlags";
 import { isDemoAllowed } from "@/lib/demoGate";
 import { ProductManager } from "@/components/ProductManager";
 
 export default async function ProductsPage() {
   const store = await getOrCreateDefaultStore();
+  const readonly = isShowcaseReadonly();
   const demoAllowed = isDemoAllowed();
 
   // Tipado explícito para evitar "implicit any" en builds donde Prisma Client types todavía no existan.
@@ -41,6 +43,7 @@ export default async function ProductsPage() {
       <ProductManager
         storeId={store.id}
         demoAllowed={demoAllowed}
+        readOnly={readonly}
         initial={products.map((p: ProductRow) => ({
           id: p.id,
           name: p.name,

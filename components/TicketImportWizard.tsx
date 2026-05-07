@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { SHOWCASE_READONLY_NOTICE } from "@/lib/clientShowcase";
 import { Badge, Button, Card, CardContent, CardHeader, Input, Label, Select } from "@/components/ui";
 import { detectDelimiter, parseCsv } from "@/lib/csv";
 import { guessTicketMapping, type TicketMapping, type TicketMappingKey } from "@/lib/ticketMapping";
@@ -37,7 +38,7 @@ function downloadBlob(filename: string, blob: Blob) {
   setTimeout(() => URL.revokeObjectURL(url), 2500);
 }
 
-export function TicketImportWizard({ storeId }: { storeId: string }) {
+export function TicketImportWizard({ storeId, readOnly = false }: { storeId: string; readOnly?: boolean }) {
   const [step, setStep] = React.useState<1 | 2 | 3>(1);
   const [fileName, setFileName] = React.useState<string>("");
   const [csvText, setCsvText] = React.useState<string>("");
@@ -213,6 +214,10 @@ export function TicketImportWizard({ storeId }: { storeId: string }) {
   const canContinueToPreview = !!csvText && headers.length > 0;
 
   const doImport = async () => {
+    if (readOnly) {
+      setError(SHOWCASE_READONLY_NOTICE);
+      return;
+    }
     setBusy(true);
     setError("");
     setResult(null);
@@ -538,7 +543,7 @@ export function TicketImportWizard({ storeId }: { storeId: string }) {
                 Filas con datos incompletos (sin producto o sin cantidad): <b>{mappedPreview.emptyCore}</b>
               </div>
               <div className="ml-auto flex items-center gap-2">
-                <Button onClick={doImport} disabled={busy || mappedPreview.issues.length > 0}>
+                <Button onClick={doImport} disabled={busy || mappedPreview.issues.length > 0 || readOnly} title={readOnly ? SHOWCASE_READONLY_NOTICE : undefined}>
                   {busy ? "Importando..." : "Importar y descontar stock"}
                 </Button>
               </div>

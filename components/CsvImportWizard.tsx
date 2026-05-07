@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { SHOWCASE_READONLY_NOTICE } from "@/lib/clientShowcase";
 import { Button, Card, CardContent, CardHeader, Input, Label, Select, Badge } from "@/components/ui";
 import { detectDelimiter, parseCsv } from "@/lib/csv";
 import { guessMappingSmart, type Mapping, type MappingKey } from "@/lib/importMapping";
@@ -33,7 +34,7 @@ function parseNumberLoose(raw: string): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-export function CsvImportWizard({ storeId }: { storeId: string }) {
+export function CsvImportWizard({ storeId, readOnly = false }: { storeId: string; readOnly?: boolean }) {
   const [step, setStep] = React.useState<1 | 2 | 3>(1);
   const [fileName, setFileName] = React.useState<string>("");
   const [csvText, setCsvText] = React.useState<string>("");
@@ -200,6 +201,10 @@ export function CsvImportWizard({ storeId }: { storeId: string }) {
   const canContinueToPreview = !!csvText && headers.length > 0;
 
   const doImport = async () => {
+    if (readOnly) {
+      setError(SHOWCASE_READONLY_NOTICE);
+      return;
+    }
     setBusy(true);
     setError("");
     setResult(null);
@@ -485,7 +490,7 @@ export function CsvImportWizard({ storeId }: { storeId: string }) {
             )}
 
             <div className="flex flex-wrap items-center gap-2">
-              <Button onClick={doImport} disabled={busy}>
+              <Button onClick={doImport} disabled={busy || readOnly} title={readOnly ? SHOWCASE_READONLY_NOTICE : undefined}>
                 {busy ? "Importando..." : "Importar"}
               </Button>
               <Button variant="ghost" onClick={() => setStep(2)} disabled={busy}>

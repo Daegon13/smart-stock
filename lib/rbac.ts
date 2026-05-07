@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { rejectMutationInShowcase } from "@/lib/showcaseReadonlyGuard";
 
 export type Role = "owner" | "manager" | "staff" | "viewer";
 
@@ -58,6 +59,8 @@ export function hasPermission(role: Role, perm: string): boolean {
 
 export function requirePermission(req: Request, perm: string): { ok: true; role: Role } | { ok: false; role: Role; response: NextResponse } {
   const role = getRoleFromRequest(req);
+  const readonlyResponse = rejectMutationInShowcase(req.method);
+  if (readonlyResponse) return { ok: false, role, response: readonlyResponse };
   if (!hasPermission(role, perm)) {
     return {
       ok: false,

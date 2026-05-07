@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { SHOWCASE_READONLY_NOTICE } from "@/lib/clientShowcase";
 import { Button, Card, CardContent, CardHeader, Input, Label, Select, Badge } from "@/components/ui";
 import { guessMappingSmart, type Mapping, type MappingKey } from "@/lib/importMapping";
 
@@ -45,7 +46,7 @@ function arrayBufferToBase64(buffer: ArrayBuffer) {
   return btoa(binary);
 }
 
-export function XlsxImportWizard({ storeId }: { storeId: string }) {
+export function XlsxImportWizard({ storeId, readOnly = false }: { storeId: string; readOnly?: boolean }) {
   const [step, setStep] = React.useState<1 | 2 | 3>(1);
   const [fileName, setFileName] = React.useState<string>("");
   const [fileBase64, setFileBase64] = React.useState<string>("");
@@ -263,6 +264,10 @@ export function XlsxImportWizard({ storeId }: { storeId: string }) {
 
   const doImport = async () => {
     if (!fileBase64) return;
+    if (readOnly) {
+      setError(SHOWCASE_READONLY_NOTICE);
+      return;
+    }
     setBusy(true);
     setError("");
     setResult(null);
@@ -556,7 +561,7 @@ export function XlsxImportWizard({ storeId }: { storeId: string }) {
             )}
 
             <div className="flex flex-wrap items-center gap-2">
-              <Button onClick={doImport} disabled={busy}>
+              <Button onClick={doImport} disabled={busy || readOnly} title={readOnly ? SHOWCASE_READONLY_NOTICE : undefined}>
                 {busy ? "Importando..." : "Importar"}
               </Button>
               <Button variant="ghost" onClick={() => setStep(2)} disabled={busy}>

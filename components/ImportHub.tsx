@@ -7,8 +7,9 @@ import { XlsxImportWizard } from "@/components/XlsxImportWizard";
 import { ImportTemplates } from "@/components/ImportTemplates";
 import { TicketImportWizard } from "@/components/TicketImportWizard";
 import { ImportBatchesCard } from "@/components/ImportBatchesCard";
+import { SHOWCASE_READONLY_NOTICE } from "@/lib/clientShowcase";
 
-export function ImportHub({ storeId, undoImportEnabled }: { storeId: string; undoImportEnabled: boolean }) {
+export function ImportHub({ storeId, undoImportEnabled, readOnly = false }: { storeId: string; undoImportEnabled: boolean; readOnly?: boolean }) {
   const [tab, setTab] = React.useState<"csv" | "xlsx" | "tickets">("xlsx");
 
   return (
@@ -69,17 +70,19 @@ export function ImportHub({ storeId, undoImportEnabled }: { storeId: string; und
         </CardContent>
       </Card>
 
+      {readOnly ? <div className="rounded-md bg-amber-50 p-3 text-sm text-amber-900">{SHOWCASE_READONLY_NOTICE}</div> : null}
+
       <ImportTemplates />
 
       {tab === "csv" ? (
-        <CsvImportWizard storeId={storeId} />
+        <CsvImportWizard storeId={storeId} readOnly={readOnly} />
       ) : tab === "xlsx" ? (
-        <XlsxImportWizard storeId={storeId} />
+        <XlsxImportWizard storeId={storeId} readOnly={readOnly} />
       ) : (
-        <TicketImportWizard storeId={storeId} />
+        <TicketImportWizard storeId={storeId} readOnly={readOnly} />
       )}
 
-      <ImportBatchesCard storeId={storeId} undoImportEnabled={undoImportEnabled} />
+      <ImportBatchesCard storeId={storeId} undoImportEnabled={undoImportEnabled} readOnly={readOnly} />
     </div>
   );
 }

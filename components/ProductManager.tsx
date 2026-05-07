@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Button, Card, CardContent, CardHeader, Input, Label } from "@/components/ui";
 import { DemoSeedButton } from "@/components/DemoSeedButton";
+import { SHOWCASE_READONLY_NOTICE } from "@/lib/clientShowcase";
 
 export type ProductDTO = {
   id: string;
@@ -49,7 +50,7 @@ const defaults = {
   currentStock: "0"
 };
 
-export function ProductManager({ storeId, initial, demoAllowed }: { storeId: string; initial: ProductDTO[]; demoAllowed: boolean }) {
+export function ProductManager({ storeId, initial, demoAllowed, readOnly = false }: { storeId: string; initial: ProductDTO[]; demoAllowed: boolean; readOnly?: boolean }) {
   const [items, setItems] = React.useState<ProductDTO[]>(initial);
 const [cats, setCats] = React.useState<{ id: string; name: string; icon: string | null }[]>([]);
   const [newCat, setNewCat] = React.useState("");
@@ -68,6 +69,10 @@ const [cats, setCats] = React.useState<{ id: string; name: string; icon: string 
 
   const [form, setForm] = React.useState({ ...defaults });
   async function createCategoryQuick() {
+    if (readOnly) {
+      setErr(SHOWCASE_READONLY_NOTICE);
+      return;
+    }
     const name = newCat.trim();
     if (!name) return;
     await jsonFetch(`/api/categories`, {
@@ -112,6 +117,10 @@ const [cats, setCats] = React.useState<{ id: string; name: string; icon: string 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErr(null);
+    if (readOnly) {
+      setErr(SHOWCASE_READONLY_NOTICE);
+      return;
+    }
     setLoading(true);
 
     try {
@@ -139,6 +148,10 @@ const [cats, setCats] = React.useState<{ id: string; name: string; icon: string 
 
   async function onDelete(id: string) {
     setErr(null);
+    if (readOnly) {
+      setErr(SHOWCASE_READONLY_NOTICE);
+      return;
+    }
     setLoading(true);
     try {
       await jsonFetch(`/api/products/${id}`, { method: "DELETE" });
@@ -161,6 +174,7 @@ const [cats, setCats] = React.useState<{ id: string; name: string; icon: string 
           </div>
         </CardHeader>
         <CardContent>
+          {readOnly ? <div className="mb-3 rounded-md bg-amber-50 p-2 text-xs text-amber-900">{SHOWCASE_READONLY_NOTICE}</div> : null}
           <form className="space-y-3" onSubmit={onSubmit}>
             <div>
               <Label>Nombre</Label>
@@ -206,7 +220,7 @@ const [cats, setCats] = React.useState<{ id: string; name: string; icon: string 
 
               <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-center">
                 <Input placeholder="Nueva categoría rápida (ej: Bebidas)" value={newCat} onChange={(e) => setNewCat(e.target.value)} />
-                <Button variant="outline" onClick={createCategoryQuick} disabled={!newCat.trim()}>
+                <Button variant="outline" onClick={createCategoryQuick} disabled={!newCat.trim() || readOnly}>
                   ➕ Crear
                 </Button>
                 <Button variant="outline" asChild>
@@ -270,7 +284,7 @@ const [cats, setCats] = React.useState<{ id: string; name: string; icon: string 
             {err ? <div className="rounded-md bg-red-50 p-2 text-xs text-red-700">{err}</div> : null}
 
             <div className="flex items-center gap-2">
-              <Button disabled={loading}>{loading ? "Guardando..." : isEditing ? "Guardar cambios" : "Crear"}</Button>
+              <Button disabled={loading || readOnly} title={readOnly ? SHOWCASE_READONLY_NOTICE : undefined}>{loading ? "Guardando..." : isEditing ? "Guardar cambios" : "Crear"}</Button>
               {isEditing ? (
                 <Button type="button" variant="ghost" onClick={cancelEdit} disabled={loading}>
                   Cancelar
@@ -314,10 +328,10 @@ const [cats, setCats] = React.useState<{ id: string; name: string; icon: string 
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button variant="ghost" onClick={() => startEdit(p)} disabled={loading}>
+                    <Button variant="ghost" onClick={() => startEdit(p)} disabled={loading || readOnly} title={readOnly ? SHOWCASE_READONLY_NOTICE : undefined}>
                       Editar
                     </Button>
-                    <Button variant="ghost" onClick={() => onDelete(p.id)} disabled={loading}>
+                    <Button variant="ghost" onClick={() => onDelete(p.id)} disabled={loading || readOnly} title={readOnly ? SHOWCASE_READONLY_NOTICE : undefined}>
                       Eliminar
                     </Button>
                   </div>

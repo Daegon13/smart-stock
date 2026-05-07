@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { rejectMutationInShowcase } from "@/lib/showcaseReadonlyGuard";
 import { z } from "zod";
 import * as XLSX from "xlsx";
 import { importTabular, MappingSchema } from "@/lib/importPipeline";
@@ -54,6 +55,8 @@ function extractTable(wb: XLSX.WorkBook, sheetName: string, hasHeader: boolean) 
 }
 
 export async function POST(req: Request) {
+  const readonlyResponse = rejectMutationInShowcase(req.method);
+  if (readonlyResponse) return readonlyResponse;
   const body = await req.json().catch(() => null);
   const parsed = BodySchema.safeParse(body);
   if (!parsed.success) {

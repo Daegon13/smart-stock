@@ -1,9 +1,11 @@
 import { getOrCreateDefaultStore } from "@/lib/defaultStore";
+import { isShowcaseReadonly } from "@/lib/runtimeFlags";
 import { isDemoAllowed } from "@/lib/demoGate";
 import { StockIntelligence } from "@/components/StockIntelligence";
 
 export default async function StockPage() {
   const store = await getOrCreateDefaultStore();
+  const readonly = isShowcaseReadonly();
   const demoAllowed = isDemoAllowed();
 
   return (
@@ -15,7 +17,7 @@ export default async function StockPage() {
         </p>
       </div>
 
-      <StockIntelligence storeId={store.id} storeName={store.name} demoAllowed={demoAllowed} />
+      <StockIntelligence storeId={store.id} storeName={store.name} demoAllowed={demoAllowed} readOnly={readonly} />
     </div>
   );
 }
