@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import crypto from "crypto";
 import { prisma } from "@/lib/db";
 import { isDevLoginBypassEnabled } from "@/lib/authFlags";
-import { getDefaultShowcaseStoreId, isDemoNoAuthAllowed } from "@/lib/runtimeFlags";
+import { getDefaultShowcaseStoreId, isDemoNoAuthAllowed, isShowcaseMode } from "@/lib/runtimeFlags";
 
 export const ACTIVE_STORE_COOKIE = "ss_active_store";
 const SESSION_COOKIE = "ss_session";
@@ -86,11 +86,11 @@ export async function getUserSession(): Promise<UserSession | null> {
 }
 
 export async function requireUser() {
-  if (isDevLoginBypassEnabled() || isDemoNoAuthAllowed()) {
+  if (isShowcaseMode() || isDevLoginBypassEnabled() || isDemoNoAuthAllowed()) {
     return {
       userId: "demo-user",
-      email: "demo@localhost",
-      name: "Demo",
+      email: isShowcaseMode() ? "demo@smartstock.local" : "demo@localhost",
+      name: isShowcaseMode() ? "Usuario demo" : "Demo",
       sessionToken: "demo"
     };
   }
@@ -115,12 +115,24 @@ export async function requireOrgAccess(orgId: string) {
 export async function requireStoreAccess(storeId: string) {
   const user = await requireUser();
   if (user.userId === "demo-user") {
-    const demo = await prisma.store.findFirst({
-      orderBy: { createdAt: "asc" },
-      select: { id: true }
-    });
+    const configuredStoreId = getDefaultShowcaseStoreId();
+    const demo = configuredStoreId
+      ? await prisma.store.findUnique({
+          where: { id: configuredStoreId },
+          select: { id: true, organizationId: true, franchiseId: true }
+        })
+      : await prisma.store.findFirst({
+          where: isShowcaseMode() ? { OR: [{ name: "Minimarket Demo" }, { id: storeId }] } : undefined,
+          orderBy: { createdAt: "asc" },
+          select: { id: true, organizationId: true, franchiseId: true }
+        });
     if (!demo) redirect("/select-store");
-    return { orgId: "", franchiseId: "", storeId: demo.id, role: "OWNER" as AuthRole };
+    return {
+      orgId: demo.organizationId || "",
+      franchiseId: demo.franchiseId || "",
+      storeId: demo.id,
+      role: "OWNER" as AuthRole
+    };
   }
 
   const store = await prisma.store.findUnique({ where: { id: storeId } });
@@ -154,7 +166,7 @@ export async function getActiveStoreFromSession() {
     }
   }
 
-  if (isDevLoginBypassEnabled() || isDemoNoAuthAllowed()) {
+  if (isShowcaseMode() || isDevLoginBypassEnabled() || isDemoNoAuthAllowed()) {
     const configuredStoreId = getDefaultShowcaseStoreId();
     const demo = configuredStoreId
       ? await prisma.store.findUnique({
@@ -162,10 +174,19 @@ export async function getActiveStoreFromSession() {
           select: { id: true, name: true, createdAt: true, updatedAt: true }
         })
       : await prisma.store.findFirst({
+          where: isShowcaseMode() ? { name: "Minimarket Demo" } : undefined,
           orderBy: { createdAt: "asc" },
           select: { id: true, name: true, createdAt: true, updatedAt: true }
         });
     if (demo) return demo;
+
+    if (isShowcaseMode()) {
+      const fallback = await prisma.store.findFirst({
+        orderBy: { createdAt: "asc" },
+        select: { id: true, name: true, createdAt: true, updatedAt: true }
+      });
+      if (fallback) return fallback;
+    }
   }
 
   redirect("/select-store");
@@ -184,6 +205,12 @@ export async function setActiveStoreForSession(storeId: string) {
 
 export async function requireActiveStore() {
   const activeStoreId = cookies().get(ACTIVE_STORE_COOKIE)?.value;
-  if (!activeStoreId) redirect("/select-store");
+  if (!activeStoreId) {
+    if (isShowcaseMode() || isDevLoginBypassEnabled() || isDemoNoAuthAllowed()) {
+      const store = await getActiveStoreFromSession();
+      return requireStoreAccess(store.id);
+    }
+    redirect("/select-store");
+  }
   return requireStoreAccess(activeStoreId);
 }
