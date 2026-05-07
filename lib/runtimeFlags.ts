@@ -23,7 +23,10 @@ export function isLoginSystemEnabled() {
 }
 
 export function isShowcaseMode() {
-  return parseBoolEnv(process.env.SHOWCASE_MODE, false);
+  return parseBoolEnv(
+    process.env.SHOWCASE_MODE,
+    parseBoolEnv(process.env.NEXT_PUBLIC_SHOWCASE_MODE, false)
+  );
 }
 
 export function isPublicShowcaseMode() {
