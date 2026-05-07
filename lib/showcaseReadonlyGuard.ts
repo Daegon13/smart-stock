@@ -17,7 +17,6 @@ export function isReadonlyProtectedApiPath(pathname: string) {
     pathname === "/api/aliases" ||
     pathname.startsWith("/api/aliases/") ||
     pathname === "/api/import/csv" ||
-    pathname === "/api/import/xlsx" ||
     pathname === "/api/import/tickets" ||
     (pathname.startsWith("/api/import/batches/") && pathname.endsWith("/undo")) ||
     pathname === "/api/purchases/drafts" ||

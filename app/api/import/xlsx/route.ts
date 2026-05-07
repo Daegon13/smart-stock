@@ -55,8 +55,6 @@ function extractTable(wb: XLSX.WorkBook, sheetName: string, hasHeader: boolean) 
 }
 
 export async function POST(req: Request) {
-  const readonlyResponse = rejectMutationInShowcase(req.method);
-  if (readonlyResponse) return readonlyResponse;
   const body = await req.json().catch(() => null);
   const parsed = BodySchema.safeParse(body);
   if (!parsed.success) {
@@ -64,6 +62,11 @@ export async function POST(req: Request) {
   }
 
   const { action, fileBase64, hasHeader } = parsed.data;
+
+  if (action === "import") {
+    const readonlyResponse = rejectMutationInShowcase(req.method);
+    if (readonlyResponse) return readonlyResponse;
+  }
 
   let wb: XLSX.WorkBook;
   let sheetNames: string[];
