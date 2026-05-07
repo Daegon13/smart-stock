@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { MovementCreateSchema } from "@/lib/validators";
-import { canMutate, withActiveStore } from "@/lib/apiAuth";
+import { canMutate, rejectMutationInShowcase, withActiveStore } from "@/lib/apiAuth";
 
 export async function GET() {
   return withActiveStore(async ({ storeId }) => {
@@ -18,6 +18,8 @@ export async function GET() {
 
 export async function POST(req: Request) {
   return withActiveStore(async ({ storeId, role }) => {
+    const readonlyResponse = rejectMutationInShowcase(req.method);
+    if (readonlyResponse) return readonlyResponse;
     if (!canMutate(role)) return NextResponse.json({ error: "Sin permisos" }, { status: 403 });
 
     const body = await req.json().catch(() => null);

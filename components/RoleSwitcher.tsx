@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Select, Sticker } from "@/components/ui";
+import { SHOWCASE_READONLY_NOTICE, isClientShowcaseReadonly } from "@/lib/clientShowcase";
 
 type Role = "owner" | "manager" | "staff" | "viewer";
 
@@ -18,6 +19,7 @@ function readCookie(name: string): string | null {
 }
 
 export function RoleSwitcher() {
+  const readOnly = isClientShowcaseReadonly();
   const [role, setRole] = useState<Role>("owner");
   const options = useMemo(
     () => [
@@ -35,6 +37,7 @@ export function RoleSwitcher() {
   }, []);
 
   async function onChange(next: string) {
+    if (readOnly) return;
     const r = (next as Role) || "owner";
     setRole(r);
 
@@ -53,7 +56,7 @@ export function RoleSwitcher() {
       <Sticker tone={role === "viewer" ? "amber" : role === "staff" ? "blue" : role === "manager" ? "green" : "purple"}>
         🔐 Rol
       </Sticker>
-      <Select value={role} onChange={(e) => onChange((e.target as HTMLSelectElement).value)}>
+      <Select value={role} onChange={(e) => onChange((e.target as HTMLSelectElement).value)} disabled={readOnly} title={readOnly ? SHOWCASE_READONLY_NOTICE : undefined}>
         {options.map((o) => (
           <option key={o.value} value={o.value}>
             {o.label}

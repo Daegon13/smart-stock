@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { rejectMutationInShowcase } from "@/lib/showcaseReadonlyGuard";
 import { prisma } from "@/lib/db";
 import { getRequestId, logApiEvent } from "@/lib/observability";
 import { isUndoImportEnabled } from "@/lib/importGate";
@@ -9,6 +10,8 @@ export async function POST(
   req: Request,
   { params }: { params: { id: string } }
 ) {
+  const readonlyResponse = rejectMutationInShowcase(req.method);
+  if (readonlyResponse) return readonlyResponse;
   const requestId = getRequestId(req);
   const batchId = params.id;
   const json = (body: unknown, status = 200) =>

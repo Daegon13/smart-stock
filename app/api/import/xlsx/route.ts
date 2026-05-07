@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { rejectMutationInShowcase } from "@/lib/showcaseReadonlyGuard";
 import { z } from "zod";
 import * as XLSX from "xlsx";
 import { importTabular, MappingSchema } from "@/lib/importPipeline";
@@ -61,6 +62,11 @@ export async function POST(req: Request) {
   }
 
   const { action, fileBase64, hasHeader } = parsed.data;
+
+  if (action === "import") {
+    const readonlyResponse = rejectMutationInShowcase(req.method);
+    if (readonlyResponse) return readonlyResponse;
+  }
 
   let wb: XLSX.WorkBook;
   let sheetNames: string[];

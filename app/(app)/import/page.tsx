@@ -1,9 +1,11 @@
 import { getOrCreateDefaultStore } from "@/lib/defaultStore";
+import { isShowcaseReadonly } from "@/lib/runtimeFlags";
 import { ImportHub } from "@/components/ImportHub";
 import { isUndoImportEnabled } from "@/lib/importGate";
 
 export default async function ImportPage() {
   const store = await getOrCreateDefaultStore();
+  const readonly = isShowcaseReadonly();
   const undoImportEnabled = isUndoImportEnabled();
 
   return (
@@ -15,7 +17,7 @@ export default async function ImportPage() {
         </p>
       </div>
 
-      <ImportHub storeId={store.id} undoImportEnabled={undoImportEnabled} />
+      <ImportHub storeId={store.id} undoImportEnabled={undoImportEnabled} readOnly={readonly} />
     </div>
   );
 }

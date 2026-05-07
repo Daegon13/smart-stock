@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Badge, Button, Card, CardContent, CardHeader, Input, Label, Select } from "@/components/ui";
+import { SHOWCASE_READONLY_NOTICE } from "@/lib/clientShowcase";
 
 export type ProductMini = {
   id: string;
@@ -73,12 +74,14 @@ export function MovementManager({
   storeId,
   products,
   initialType,
-  initialView
+  initialView,
+  readOnly = false
 }: {
   storeId: string;
   products: ProductMini[];
   initialType?: MovementDTO["type"];
   initialView?: "quick" | "history";
+  readOnly?: boolean;
 }) {
   const [view, setView] = React.useState<"quick" | "history">(initialView ?? "quick");
 
@@ -140,6 +143,10 @@ export function MovementManager({
     e.preventDefault();
     setErr(null);
     setOk(null);
+    if (readOnly) {
+      setErr(SHOWCASE_READONLY_NOTICE);
+      return;
+    }
     setLoading(true);
     try {
       const resp = await jsonFetch<CreateMovementResponse>(`/api/movements`, {
@@ -427,10 +434,11 @@ export function MovementManager({
                 />
               </div>
 
+              {readOnly ? <div className="rounded-md bg-amber-50 p-2 text-xs text-amber-900">{SHOWCASE_READONLY_NOTICE}</div> : null}
               {err ? <div className="rounded-md bg-red-50 p-2 text-xs text-red-700">{err}</div> : null}
               {ok ? <div className="rounded-md bg-emerald-50 p-2 text-xs text-emerald-700">{ok}</div> : null}
 
-              <Button disabled={loading || !form.productId} className="w-full">
+              <Button disabled={loading || !form.productId || readOnly} title={readOnly ? SHOWCASE_READONLY_NOTICE : undefined} className="w-full">
                 {loading ? "Guardando..." : form.type === "OUT" ? "Registrar venta" : form.type === "IN" ? "Registrar compra" : "Guardar ajuste"}
               </Button>
 

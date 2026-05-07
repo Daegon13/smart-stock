@@ -4,6 +4,7 @@ import { validateBetaToken } from "@/lib/betaAuth";
 import { hasBetaGateConfig, isBetaGateMisconfiguredInProd } from "@/lib/betaGate";
 import { isDevLoginBypassEnabled } from "@/lib/authFlags";
 import { isDemoNoAuthAllowed, isShowcaseMode, isShowcaseReadonly } from "@/lib/runtimeFlags";
+import { isMutatingMethod, isReadonlyProtectedApiPath, SHOWCASE_READONLY_MESSAGE } from "@/lib/showcaseReadonlyGuard";
 
 const APP_ROUTE_PREFIXES = [
   "/dashboard",
@@ -52,7 +53,7 @@ function unauthorizedApi(requestId: string) {
 
 function readonlyApi(requestId: string) {
   return NextResponse.json(
-    { ok: false, error: "Showcase público: las acciones de escritura están desactivadas." },
+    { ok: false, error: { message: SHOWCASE_READONLY_MESSAGE } },
     { status: 403, headers: { "x-request-id": requestId, "cache-control": "no-store" } }
   );
 }
@@ -70,7 +71,7 @@ export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   if (isShowcaseMode()) {
-    if (pathname.startsWith("/api/") && req.method !== "GET" && pathname !== "/api/health" && isShowcaseReadonly()) {
+    if (pathname.startsWith("/api/") && isShowcaseReadonly() && isMutatingMethod(req.method) && isReadonlyProtectedApiPath(pathname)) {
       return readonlyApi(requestId);
     }
 

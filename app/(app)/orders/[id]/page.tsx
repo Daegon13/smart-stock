@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Badge, Button, Card, CardContent, CardHeader, Sticker } from "@/components/ui";
 import { PurchaseOrderReceive } from "@/components/PurchaseOrderReceive";
 import { prisma } from "@/lib/db";
+import { isShowcaseReadonly } from "@/lib/runtimeFlags";
 
 function statusBadge(status: string) {
   const s = status.toUpperCase();
@@ -19,6 +20,7 @@ function waLink(phone: string, text: string) {
 }
 
 export default async function OrderDetailPage({ params }: { params: { id: string } }) {
+  const readonly = isShowcaseReadonly();
   const order = await prisma.purchaseOrder.findUnique({
     where: { id: params.id },
     include: {
@@ -152,6 +154,7 @@ export default async function OrderDetailPage({ params }: { params: { id: string
                 qtyOrdered: i.qtyOrdered,
                 qtyReceived: i.qtyReceived
               }))}
+              readOnly={readonly}
             />
 
             <div className="mt-4 text-[11px] text-slate-500">

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { rejectMutationInShowcase } from "@/lib/showcaseReadonlyGuard";
 import { z } from "zod";
 import { parseCsv } from "@/lib/csv";
 import { importTabular, MappingSchema } from "@/lib/importPipeline";
@@ -12,6 +13,8 @@ const BodySchema = z.object({
 });
 
 export async function POST(req: Request) {
+  const readonlyResponse = rejectMutationInShowcase(req.method);
+  if (readonlyResponse) return readonlyResponse;
   const body = await req.json().catch(() => null);
   const parsed = BodySchema.safeParse(body);
   if (!parsed.success) {

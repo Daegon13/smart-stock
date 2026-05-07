@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { rejectMutationInShowcase } from "@/lib/showcaseReadonlyGuard";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { codeVariants, normName } from "@/lib/posNormalize";
@@ -17,6 +18,8 @@ const BodySchema = z.object({
 });
 
 export async function POST(req: Request) {
+  const readonlyResponse = rejectMutationInShowcase(req.method);
+  if (readonlyResponse) return readonlyResponse;
   const perm = requirePermission(req, "tickets:reconcile");
   if (!perm.ok) return perm.response;
 

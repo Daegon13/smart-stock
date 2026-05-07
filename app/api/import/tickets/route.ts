@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { rejectMutationInShowcase } from "@/lib/showcaseReadonlyGuard";
 import { z } from "zod";
 import { parseCsv } from "@/lib/csv";
 import { importTicketsTabular, TicketMappingSchema } from "@/lib/ticketImportPipeline";
@@ -15,6 +16,8 @@ const BodySchema = z.object({
 });
 
 export async function POST(req: Request) {
+  const readonlyResponse = rejectMutationInShowcase(req.method);
+  if (readonlyResponse) return readonlyResponse;
   const requestId = getRequestId(req);
   const limit = enforceRateLimit({ req, route: "/api/import/tickets", maxRequests: 20, windowMs: 60_000, requestId });
   if (!limit.ok) {

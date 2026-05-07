@@ -1,5 +1,6 @@
 import type { Supplier } from "@prisma/client";
 import { NextResponse } from "next/server";
+import { rejectMutationInShowcase } from "@/lib/showcaseReadonlyGuard";
 import { prisma } from "@/lib/db";
 import { getOrCreateDefaultStore } from "@/lib/defaultStore";
 import { isDemoAllowed } from "@/lib/demoGate";
@@ -49,6 +50,8 @@ function cfgByCategory(category: string | null) {
 }
 
 export async function POST(req: Request) {
+  const readonlyResponse = rejectMutationInShowcase(req.method);
+  if (readonlyResponse) return readonlyResponse;
   const requestId = getRequestId(req);
   const json = (body: SeedResult, status = 200) =>
     NextResponse.json(body, { status, headers: { "x-request-id": requestId, "cache-control": "no-store" } });

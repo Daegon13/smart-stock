@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { getOrCreateDefaultStore } from "@/lib/defaultStore";
+import { isShowcaseReadonly } from "@/lib/runtimeFlags";
 import { MovementManager } from "@/components/MovementManager";
 
 export default async function MovementsPage({
@@ -8,6 +9,7 @@ export default async function MovementsPage({
   searchParams?: { [key: string]: string | string[] | undefined };
 }) {
   const store = await getOrCreateDefaultStore();
+  const readonly = isShowcaseReadonly();
   const products = await prisma.product.findMany({
     where: { storeId: store.id },
     select: {
@@ -31,7 +33,7 @@ export default async function MovementsPage({
         <p className="mt-1 text-sm text-slate-600">Local: {store.name}</p>
       </div>
 
-      <MovementManager storeId={store.id} products={products} initialType={initialType} initialView={initialView} />
+      <MovementManager storeId={store.id} products={products} initialType={initialType} initialView={initialView} readOnly={readonly} />
     </div>
   );
 }

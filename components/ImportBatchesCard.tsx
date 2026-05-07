@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
+import { SHOWCASE_READONLY_NOTICE } from "@/lib/clientShowcase";
 
 type Batch = {
   id: string;
@@ -18,7 +19,7 @@ type Batch = {
   importedAt: string;
 };
 
-export function ImportBatchesCard({ storeId, undoImportEnabled }: { storeId: string; undoImportEnabled: boolean }) {
+export function ImportBatchesCard({ storeId, undoImportEnabled, readOnly = false }: { storeId: string; undoImportEnabled: boolean; readOnly?: boolean }) {
   const [batches, setBatches] = React.useState<Batch[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -47,6 +48,10 @@ export function ImportBatchesCard({ storeId, undoImportEnabled }: { storeId: str
   }, [storeId]);
 
   async function undoBatch(id: string) {
+    if (readOnly) {
+      setError(SHOWCASE_READONLY_NOTICE);
+      return;
+    }
     if (!confirm("¿Deshacer este lote? Esto borrará tickets y revertirá movimientos de stock.")) return;
     setUndoing(id);
     setError(null);
@@ -125,8 +130,8 @@ export function ImportBatchesCard({ storeId, undoImportEnabled }: { storeId: str
                   <Button
                     variant="outline"
                     onClick={() => void undoBatch(b.id)}
-                    disabled={undoing === b.id || loading}
-                    title="Deshace tickets y movimientos del lote. Se bloquea si hay movimientos posteriores."
+                    disabled={undoing === b.id || loading || readOnly}
+                    title={readOnly ? SHOWCASE_READONLY_NOTICE : "Deshace tickets y movimientos del lote. Se bloquea si hay movimientos posteriores."}
                   >
                     {undoing === b.id ? "Deshaciendo…" : "Deshacer"}
                   </Button>

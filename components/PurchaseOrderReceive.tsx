@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Button, Input, Sticker } from "@/components/ui";
+import { SHOWCASE_READONLY_NOTICE } from "@/lib/clientShowcase";
 
 type Item = {
   id: string;
@@ -24,7 +25,7 @@ async function jsonFetch<T>(input: RequestInfo, init?: RequestInit) {
   return (await res.json()) as T;
 }
 
-export function PurchaseOrderReceive({ orderId, items }: { orderId: string; items: Item[] }) {
+export function PurchaseOrderReceive({ orderId, items, readOnly = false }: { orderId: string; items: Item[]; readOnly?: boolean }) {
   const router = useRouter();
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string>("");
@@ -52,6 +53,11 @@ export function PurchaseOrderReceive({ orderId, items }: { orderId: string; item
   async function submit() {
     setError("");
     setOk("");
+
+    if (readOnly) {
+      setError(SHOWCASE_READONLY_NOTICE);
+      return;
+    }
 
     const payloadItems = items
       .map((i) => ({ itemId: i.id, qty: Number(qtyMap[i.id] || 0) }))
@@ -101,7 +107,7 @@ export function PurchaseOrderReceive({ orderId, items }: { orderId: string; item
         <div className="text-xs text-slate-600">
           Tip: si llega todo junto, usá <span className="font-semibold">Recibir todo</span>.
         </div>
-        <Button variant="outline" onClick={fillAll} disabled={!canFill}>
+        <Button variant="outline" onClick={fillAll} disabled={!canFill || readOnly} title={readOnly ? SHOWCASE_READONLY_NOTICE : undefined}>
           <Sticker tone="emerald">✅</Sticker>
           Recibir todo
         </Button>
@@ -125,7 +131,7 @@ export function PurchaseOrderReceive({ orderId, items }: { orderId: string; item
                     value={qtyMap[i.id] ?? ""}
                     onChange={(e) => setQtyMap((m) => ({ ...m, [i.id]: e.target.value }))}
                     placeholder={done ? "OK" : "0"}
-                    disabled={done || loading}
+                    disabled={done || loading || readOnly}
                     inputMode="numeric"
                   />
                 </div>
@@ -135,10 +141,11 @@ export function PurchaseOrderReceive({ orderId, items }: { orderId: string; item
         })}
       </div>
 
+      {readOnly ? <div className="rounded-md bg-amber-50 p-2 text-xs text-amber-900">{SHOWCASE_READONLY_NOTICE}</div> : null}
       {error ? <div className="text-sm text-red-600">{error}</div> : null}
       {ok ? <div className="text-sm text-emerald-700">{ok}</div> : null}
 
-      <Button onClick={submit} disabled={loading} className="w-full">
+      <Button onClick={submit} disabled={loading || readOnly} title={readOnly ? SHOWCASE_READONLY_NOTICE : undefined} className="w-full">
         <span aria-hidden>📥</span>
         Registrar recepción
       </Button>

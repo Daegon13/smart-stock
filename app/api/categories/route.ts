@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { canMutate, withActiveStore } from "@/lib/apiAuth";
+import { canMutate, rejectMutationInShowcase, withActiveStore } from "@/lib/apiAuth";
 
 function slugify(s: string) {
   return String(s ?? "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-").replace(/-+/g, "-");
@@ -20,6 +20,8 @@ const CreateSchema = z.object({ storeId: z.string().optional(), scope: z.string(
 
 export async function POST(req: Request) {
   return withActiveStore(async ({ storeId, role }) => {
+    const readonlyResponse = rejectMutationInShowcase(req.method);
+    if (readonlyResponse) return readonlyResponse;
     if (!canMutate(role)) return NextResponse.json({ error: { message: "Sin permisos" } }, { status: 403 });
 
     const body = await req.json().catch(() => null);

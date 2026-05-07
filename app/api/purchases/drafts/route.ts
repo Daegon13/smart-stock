@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { rejectMutationInShowcase } from "@/lib/showcaseReadonlyGuard";
 import { prisma } from "@/lib/db";
 import { PurchaseDraftCreateSchema } from "@/lib/validators";
 
@@ -27,6 +28,8 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const readonlyResponse = rejectMutationInShowcase(req.method);
+  if (readonlyResponse) return readonlyResponse;
   const body = await req.json().catch(() => null);
   const parsed = PurchaseDraftCreateSchema.safeParse(body);
   if (!parsed.success) {

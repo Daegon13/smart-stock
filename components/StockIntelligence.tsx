@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Badge, Button, Card, CardContent, CardHeader, Input, Label } from "@/components/ui";
 import { DemoSeedButton } from "@/components/DemoSeedButton";
 import { buildPurchaseCsv, buildSupplierPurchaseMessage, buildWhatsAppUrl } from "@/lib/stock";
+import { SHOWCASE_READONLY_NOTICE } from "@/lib/clientShowcase";
 
 export type SuggestionDTO = {
   productId: string;
@@ -123,7 +124,7 @@ function groupBySupplier(items: SuggestionDTO[]): SupplierGroup[] {
     });
 }
 
-export function StockIntelligence({ storeId, storeName, demoAllowed }: { storeId: string; storeName?: string; demoAllowed: boolean }) {
+export function StockIntelligence({ storeId, storeName, demoAllowed, readOnly = false }: { storeId: string; storeName?: string; demoAllowed: boolean; readOnly?: boolean }) {
   const [items, setItems] = React.useState<SuggestionDTO[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [err, setErr] = React.useState<string | null>(null);
@@ -317,8 +318,14 @@ export function StockIntelligence({ storeId, storeName, demoAllowed }: { storeId
                       <Button
                         variant="soft"
                         type="button"
+                        disabled={readOnly}
+                        title={readOnly ? SHOWCASE_READONLY_NOTICE : undefined}
                         onClick={async () => {
                           setOrderMsg(null);
+                          if (readOnly) {
+                            setOrderMsg(SHOWCASE_READONLY_NOTICE);
+                            return;
+                          }
                           try {
                             const res = await jsonFetch<{ order: { id: string } }>("/api/purchases/orders", {
                               method: "POST",
@@ -351,6 +358,8 @@ export function StockIntelligence({ storeId, storeName, demoAllowed }: { storeId
                       <Button
                         variant="soft"
                         type="button"
+                        disabled={readOnly}
+                        title={readOnly ? SHOWCASE_READONLY_NOTICE : undefined}
                         onClick={async () => {
                           setSaveMsg(null);
                           try {
@@ -380,6 +389,7 @@ export function StockIntelligence({ storeId, storeName, demoAllowed }: { storeId
               </div>
             )}
 
+            {readOnly ? <div className="mt-3 rounded-md bg-amber-50 p-2 text-xs text-amber-900">{SHOWCASE_READONLY_NOTICE}</div> : null}
             {saveMsg ? <div className="mt-3 rounded-md bg-slate-100 p-2 text-xs text-slate-700">{saveMsg}</div> : null}
             {orderMsg ? (
               <div className="mt-3 rounded-md bg-indigo-50 p-2 text-xs text-indigo-900">{orderMsg}</div>
