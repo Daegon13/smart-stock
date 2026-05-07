@@ -19,7 +19,15 @@ Si usás Supabase, mirá también: `DEPLOY-VERCEL-SUPABASE.md`.
 - `UNDO_IMPORT_ENABLED` = "false" para deshabilitar endpoint/botón de deshacer imports
 
 ### Seed (solo local / controlado)
-- `SEED_DEMO` = "true" para insertar datos demo al preparar DB
+- `SEED_DEMO` = "true" para insertar datos demo básicos al preparar DB.
+- Showcase público estable: `npm run db:seed:showcase`. Crea/reutiliza la organización `showcase-org`, la franquicia `Showcase Franchise` y el local `Minimarket Demo`, con catálogo, proveedores, movimientos, tickets importados y pedidos simulados. Es idempotente: se puede correr más de una vez sin duplicar catálogo ni actividad demo.
+
+Comando recomendado para preparar una DB de showcase:
+```bash
+npm run db:seed:showcase
+```
+
+Después del seed, si publicás con `SHOWCASE_MODE=true`, podés usar el `store.id` impreso por consola como `SHOWCASE_STORE_ID`/`DEMO_STORE_ID` si querés fijar explícitamente el local demo.
 
 ## Comandos útiles
 
