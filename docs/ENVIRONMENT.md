@@ -8,6 +8,8 @@ If no showcase variables are set, the app defaults to the safer SaaS path:
 
 ```env
 AUTH_LOGIN_ENABLED=true
+NEXT_PUBLIC_SITE_URL=https://smart-stock-showcase.vercel.app
+NEXT_PUBLIC_CONTACT_URL=mailto:contacto@marindev.com?subject=Implementaci%C3%B3n%20Smart%20Stock
 SHOWCASE_MODE=false
 NEXT_PUBLIC_SHOWCASE_MODE=false
 SHOWCASE_READONLY=false
@@ -21,6 +23,8 @@ In this mode, login/beta-gate protection remains enabled and production is not o
 Use this for a public portfolio demo backed by stable sample data:
 
 ```env
+NEXT_PUBLIC_SITE_URL=https://<public showcase domain>
+NEXT_PUBLIC_CONTACT_URL=mailto:<public contact email>?subject=Implementaci%C3%B3n%20Smart%20Stock
 SHOWCASE_MODE=true
 NEXT_PUBLIC_SHOWCASE_MODE=true
 SHOWCASE_READONLY=true
@@ -31,7 +35,7 @@ ALLOW_DEMO_NO_AUTH=false
 ALLOW_DEMO_SEED=false
 ```
 
-`SHOWCASE_MODE` is the server-side switch that can bypass login. `NEXT_PUBLIC_SHOWCASE_MODE` is only for client-visible showcase UI. `SHOWCASE_READONLY` defaults to `true` whenever `SHOWCASE_MODE=true`, unless explicitly set to `false` for a controlled private demo. `NEXT_PUBLIC_SHOWCASE_READONLY` mirrors that state for client copy only; server-side blocking still depends on `SHOWCASE_READONLY`.
+`NEXT_PUBLIC_SITE_URL` and `NEXT_PUBLIC_CONTACT_URL` keep public metadata and CTAs deploy-specific instead of hardcoded. `SHOWCASE_MODE` is the server-side switch that can bypass login. `NEXT_PUBLIC_SHOWCASE_MODE` is only for client-visible showcase UI. `SHOWCASE_READONLY` defaults to `true` whenever `SHOWCASE_MODE=true`, unless explicitly set to `false` for a controlled private demo. `NEXT_PUBLIC_SHOWCASE_READONLY` mirrors that state for client copy only; server-side blocking still depends on `SHOWCASE_READONLY`.
 
 ## Private writable demo mode
 

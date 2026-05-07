@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Badge, Button, Card, CardContent, CardHeader, Sticker } from "@/components/ui";
+import { PUBLIC_CONTACT_URL } from "@/lib/clientShowcase";
 
 const technicalSignals = [
   "Next.js App Router con rutas públicas y panel server-rendered",
@@ -50,7 +51,7 @@ export default function HomePage() {
               <Link href="/about-demo">Ver recorrido técnico</Link>
             </Button>
             <Button asChild size="lg" variant="ghost">
-              <a href="mailto:contacto@marindev.com?subject=Implementaci%C3%B3n%20Smart%20Stock">Contactar por una implementación</a>
+              <a href={PUBLIC_CONTACT_URL}>Contactar por una implementación</a>
             </Button>
           </div>
 

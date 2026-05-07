@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { Badge, Button, Card, CardContent, CardHeader, Sticker } from "@/components/ui";
+import { PUBLIC_CONTACT_URL } from "@/lib/clientShowcase";
 
 export const metadata: Metadata = {
   title: "Recorrido técnico | Smart Stock",
@@ -152,7 +153,7 @@ export default function AboutDemoPage() {
               <p className="mt-1 text-sm leading-6 text-slate-300">La demo está orientada a mostrar criterio de producto, ejecución full-stack y una base clara para adaptar a procesos reales.</p>
             </div>
             <Button asChild>
-              <a href="mailto:contacto@marindev.com?subject=Implementaci%C3%B3n%20Smart%20Stock">Contactar por una implementación</a>
+              <a href={PUBLIC_CONTACT_URL}>Contactar por una implementación</a>
             </Button>
           </div>
         </CardContent>

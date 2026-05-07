@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
 import { Badge, Button, Sticker } from "@/components/ui";
-import { isClientShowcaseReadonly } from "@/lib/clientShowcase";
+import { isClientShowcaseReadonly, PUBLIC_CONTACT_URL } from "@/lib/clientShowcase";
 
 type NavItem = { href: string; label: string; icon: string; hint?: string };
 
@@ -239,7 +239,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   <Link href="/about-demo" className="underline underline-offset-2">
                     Ver recorrido técnico
                   </Link>
-                  <a href="mailto:contacto@marindev.com?subject=Implementaci%C3%B3n%20Smart%20Stock" className="underline underline-offset-2">
+                  <a href={PUBLIC_CONTACT_URL} className="underline underline-offset-2">
                     MarinDev · contacto
                   </a>
                 </div>

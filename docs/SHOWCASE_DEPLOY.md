@@ -29,6 +29,8 @@ DIRECT_URL=<postgres direct/non-pooling url>
 
 ```env
 APP_VERSION=showcase
+NEXT_PUBLIC_SITE_URL=https://<tu-dominio-publico>
+NEXT_PUBLIC_CONTACT_URL=mailto:<tu-email-publico>?subject=Implementaci%C3%B3n%20Smart%20Stock
 SHOWCASE_MODE=true
 NEXT_PUBLIC_SHOWCASE_MODE=true
 SHOWCASE_READONLY=true
@@ -44,6 +46,8 @@ NEXT_PUBLIC_SHOW_DEV_BANNERS=false
 
 Notas:
 
+- `NEXT_PUBLIC_SITE_URL` define la URL canónica usada por metadata/OpenGraph.
+- `NEXT_PUBLIC_CONTACT_URL` define el CTA comercial público; puede ser `mailto:`, portfolio, LinkedIn o formulario.
 - `SHOWCASE_MODE=true` es el switch server-side que habilita navegación pública sin login.
 - `NEXT_PUBLIC_SHOWCASE_MODE=true` solo expone el estado al cliente para mostrar banner/copy de demo.
 - `SHOWCASE_READONLY=true` bloquea mutaciones desde middleware/API.

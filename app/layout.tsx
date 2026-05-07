@@ -1,8 +1,9 @@
 import "./globals.css";
 import type { Metadata } from "next";
+import { PUBLIC_SITE_URL } from "@/lib/clientShowcase";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://smart-stock-showcase.vercel.app"),
+  metadataBase: new URL(PUBLIC_SITE_URL),
   title: {
     default: "Smart Stock — demo pública de inventario y reposición",
     template: "%s | Smart Stock"
