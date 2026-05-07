@@ -95,6 +95,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   // En producción evitamos señales “demo/MVP”.
   const showDevBanners =
     process.env.NODE_ENV !== "production" || process.env.NEXT_PUBLIC_SHOW_DEV_BANNERS === "true";
+  const showShowcaseBanner = process.env.NEXT_PUBLIC_SHOWCASE_MODE === "true";
 
   React.useEffect(() => {
     setMobileOpen(false);
@@ -113,7 +114,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             ☰
           </Button>
           <span className="text-sm font-bold text-slate-900">SmartStock</span>
-          {showDevBanners ? (
+          {showShowcaseBanner ? (
+            <Badge tone="amber" className="ml-1">
+              Modo demo
+            </Badge>
+          ) : showDevBanners ? (
             <Badge tone="slate" className="ml-1">
               Dev
             </Badge>
@@ -141,7 +146,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   <div className="text-xs text-slate-500">Inventario simple</div>
                 </div>
               </Link>
-              {showDevBanners ? <Badge tone="slate">MVP</Badge> : null}
+              {showShowcaseBanner ? <Badge tone="amber">Showcase público</Badge> : showDevBanners ? <Badge tone="slate">MVP</Badge> : null}
             </div>
 
             {/* Core nav */}
@@ -202,7 +207,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   </Button>
                 </div>
 
-                {showDevBanners ? (
+                {showShowcaseBanner ? (
+                  <div className="mt-3 text-[11px] text-amber-700">
+                    Showcase público: usando contexto demo de Minimarket Demo.
+                  </div>
+                ) : showDevBanners ? (
                   <div className="mt-3 text-[11px] text-slate-500">
                     Dev: en producción se ocultan señales “demo/MVP”.
                   </div>
@@ -213,7 +222,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </aside>
 
         {/* Main */}
-        <main className="p-4 md:p-6 ss-section">{children}</main>
+        <main className="p-4 md:p-6 ss-section">
+          {showShowcaseBanner ? (
+            <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+              <strong>Modo demo · Showcase público.</strong> Navegás con datos de ejemplo y una tienda demo por defecto.
+            </div>
+          ) : null}
+          {children}
+        </main>
       </div>
     </div>
   );

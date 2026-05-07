@@ -3,11 +3,31 @@ import type { NextRequest } from "next/server";
 import { validateBetaToken } from "@/lib/betaAuth";
 import { hasBetaGateConfig, isBetaGateMisconfiguredInProd } from "@/lib/betaGate";
 import { isDevLoginBypassEnabled } from "@/lib/authFlags";
-import { isDemoNoAuthAllowed } from "@/lib/runtimeFlags";
+import { isDemoNoAuthAllowed, isShowcaseMode, isShowcaseReadonly } from "@/lib/runtimeFlags";
 
 const APP_ROUTE_PREFIXES = [
-  "/dashboard", "/today", "/import", "/stock", "/orders", "/products", "/suppliers", "/categories", "/movements", "/reconcile", "/aliases", "/assistant", "/copilot", "/pos", "/purchases", "/tickets", "/logout", "/settings", "/select-store"
+  "/dashboard",
+  "/today",
+  "/import",
+  "/stock",
+  "/orders",
+  "/products",
+  "/suppliers",
+  "/categories",
+  "/movements",
+  "/reconcile",
+  "/aliases",
+  "/assistant",
+  "/copilot",
+  "/pos",
+  "/purchases",
+  "/tickets",
+  "/logout",
+  "/settings",
+  "/select-store"
 ];
+
+const AUTH_ENTRY_PATHS = ["/signin", "/login"];
 
 function isProtectedPath(pathname: string) {
   if (pathname.startsWith("/api/")) return pathname !== "/api/health";
@@ -30,6 +50,13 @@ function unauthorizedApi(requestId: string) {
   return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401, headers: { "x-request-id": requestId, "cache-control": "no-store" } });
 }
 
+function readonlyApi(requestId: string) {
+  return NextResponse.json(
+    { ok: false, error: "Showcase público: las acciones de escritura están desactivadas." },
+    { status: 403, headers: { "x-request-id": requestId, "cache-control": "no-store" } }
+  );
+}
+
 function redirectTo(urlPath: string, req: NextRequest, requestId: string) {
   const url = req.nextUrl.clone();
   url.pathname = urlPath;
@@ -41,6 +68,18 @@ function redirectTo(urlPath: string, req: NextRequest, requestId: string) {
 export async function middleware(req: NextRequest) {
   const requestId = getOrCreateRequestId(req);
   const { pathname } = req.nextUrl;
+
+  if (isShowcaseMode()) {
+    if (pathname.startsWith("/api/") && req.method !== "GET" && pathname !== "/api/health" && isShowcaseReadonly()) {
+      return readonlyApi(requestId);
+    }
+
+    if (AUTH_ENTRY_PATHS.includes(pathname) || pathname === "/select-store") {
+      return redirectTo("/today", req, requestId);
+    }
+
+    if (isProtectedPath(pathname)) return nextWithRequestId(req, requestId);
+  }
 
   if (!isProtectedPath(pathname)) return nextWithRequestId(req, requestId);
 
