@@ -6,7 +6,7 @@ Smart Stock es una aplicación web de gestión inteligente de inventario para co
 
 ## Demo pública
 
-- **Demo:** `https://<smart-stock-demo-url>` <!-- TODO: reemplazar por la URL pública definitiva. -->
+- **Demo:** `https://<smart-stock-demo-url>` (placeholder hasta publicar el dominio definitivo).
 - **Modo recomendado para demo:** `SHOWCASE_MODE=true` y `SHOWCASE_READONLY=true`.
 
 ## Problema que resuelve
@@ -145,6 +145,16 @@ Abrir `http://localhost:3000`.
 | `npm run db:push` | Aplica el schema Prisma a la base configurada. |
 | `npm run db:seed:showcase` | Carga dataset demo para portfolio público. |
 | `npm run db:seed:maybe` | Seed condicional controlado por variables de entorno. |
+
+## Checklist final de portfolio
+
+Antes de compartir el link público:
+
+- Reemplazar `https://<smart-stock-demo-url>` por el dominio definitivo.
+- Confirmar que el deploy usa `SHOWCASE_MODE=true` y `SHOWCASE_READONLY=true`.
+- Cargar el dataset demo con `npm run db:seed:showcase` contra una DB sin datos reales.
+- Guardar el `store.id` impreso por el seed como `DEMO_STORE_ID` si el entorno tiene más de un local.
+- Verificar que las rutas principales navegan sin login y que las escrituras responden 403 en modo read-only.
 
 ## Notas para release
 
