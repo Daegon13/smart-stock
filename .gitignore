@@ -10,3 +10,5 @@ prisma/dev.db
 prisma/dev.db-journal
 !.env.example
 .env.*
+.vercel
+.env*.local
