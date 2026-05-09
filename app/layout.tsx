@@ -1,6 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { PUBLIC_SITE_URL } from "@/lib/clientShowcase";
+import { contact } from "@/lib/contact";
 
 export const metadata: Metadata = {
   metadataBase: new URL(PUBLIC_SITE_URL),
@@ -10,6 +11,8 @@ export const metadata: Metadata = {
   },
   description:
     "Demo pública read-only de Smart Stock: inventario, ventas importadas, reposición y pedidos por proveedor para comercios.",
+  authors: [{ name: "Marin Dev / Diego", url: contact.websiteHref }],
+  creator: "Marin Dev / Diego",
   openGraph: {
     title: "Smart Stock — demo pública de inventario y reposición",
     description:

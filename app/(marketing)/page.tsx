@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Badge, Button, Card, CardContent, CardHeader, Sticker } from "@/components/ui";
-import { PUBLIC_CONTACT_URL } from "@/lib/clientShowcase";
+import { contact } from "@/lib/contact";
 
 const technicalSignals = [
   "Next.js App Router con rutas públicas y panel server-rendered",
@@ -51,8 +51,13 @@ export default function HomePage() {
               <Link href="/about-demo">Ver recorrido técnico</Link>
             </Button>
             <Button asChild size="lg" variant="ghost">
-              <a href={PUBLIC_CONTACT_URL}>Contactar por una implementación</a>
+              <a href={contact.whatsappHref} target="_blank" rel="noreferrer">Contactar por WhatsApp</a>
             </Button>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm text-slate-500">
+            <span>Marin Dev / Diego</span>
+            <a href={contact.websiteHref} target="_blank" rel="noreferrer" className="font-medium text-slate-700 underline underline-offset-2">{contact.websiteDisplay}</a>
+            <a href={contact.instagramHref} target="_blank" rel="noreferrer" className="font-medium text-slate-700 underline underline-offset-2">{contact.instagramHandle}</a>
           </div>
 
           <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
@@ -145,6 +150,12 @@ export default function HomePage() {
                 </Button>
                 <Button asChild variant="outline" className="border-white/20 bg-white/10 text-white hover:bg-white/20">
                   <Link href="/about-demo">Detalles técnicos</Link>
+                </Button>
+                <Button asChild variant="ghost" className="text-white hover:bg-white/10">
+                  <a href={contact.websiteHref} target="_blank" rel="noreferrer">Ver portfolio</a>
+                </Button>
+                <Button asChild variant="ghost" className="text-white hover:bg-white/10">
+                  <a href={contact.instagramHref} target="_blank" rel="noreferrer">Seguir en Instagram</a>
                 </Button>
               </div>
             </div>

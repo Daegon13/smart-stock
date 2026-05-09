@@ -4,7 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
 import { Badge, Button, Sticker } from "@/components/ui";
-import { isClientShowcaseReadonly, PUBLIC_CONTACT_URL } from "@/lib/clientShowcase";
+import { isClientShowcaseReadonly } from "@/lib/clientShowcase";
+import { contact } from "@/lib/contact";
 
 type NavItem = { href: string; label: string; icon: string; hint?: string };
 
@@ -214,8 +215,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     <div>Demo pública: datos ficticios de Minimarket Demo.</div>
                     <div>{showcaseReadonly ? "Modo solo lectura: mutaciones desactivadas." : "Modo demo editable para entorno controlado."}</div>
                     <Link href="/about-demo" className="font-semibold underline underline-offset-2">
-                      Recorrido técnico · MarinDev
+                      Recorrido técnico · Marin Dev
                     </Link>
+                    <div className="flex flex-wrap gap-x-2 gap-y-1">
+                      <a href={contact.websiteHref} target="_blank" rel="noreferrer" className="underline underline-offset-2">
+                        Portfolio
+                      </a>
+                      <span aria-hidden>·</span>
+                      <a href={contact.instagramHref} target="_blank" rel="noreferrer" className="underline underline-offset-2">
+                        Instagram
+                      </a>
+                    </div>
                   </div>
                 ) : showDevBanners ? (
                   <div className="mt-3 text-[11px] text-slate-500">
@@ -239,8 +249,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   <Link href="/about-demo" className="underline underline-offset-2">
                     Ver recorrido técnico
                   </Link>
-                  <a href={PUBLIC_CONTACT_URL} className="underline underline-offset-2">
-                    MarinDev · contacto
+                  <a href={contact.whatsappHref} target="_blank" rel="noreferrer" className="underline underline-offset-2">
+                    Contactar por WhatsApp
+                  </a>
+                  <a href={contact.websiteHref} target="_blank" rel="noreferrer" className="underline underline-offset-2">
+                    Ver portfolio
                   </a>
                 </div>
               </div>

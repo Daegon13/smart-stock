@@ -6,7 +6,7 @@ Smart Stock es una aplicación web de gestión inteligente de inventario para co
 
 ## Demo pública
 
-- **Demo:** `https://<smart-stock-demo-url>` (placeholder hasta publicar el dominio definitivo).
+- **Demo:** el deploy público debe configurar `NEXT_PUBLIC_SITE_URL`; el fallback del proyecto es `https://smart-stock-showcase.vercel.app`.
 - **Modo recomendado para demo:** `SHOWCASE_MODE=true` y `SHOWCASE_READONLY=true`.
 
 ## Problema que resuelve
@@ -62,6 +62,14 @@ Smart Stock **no** debe presentarse aún como SaaS terminado. En particular, tod
 - aislamiento multi-tenant exhaustivo por sesión;
 - gestión completa de usuarios, invitaciones y roles;
 - procesos de soporte, billing, backups y operación productiva.
+
+## Contacto y portfolio
+
+Smart Stock se presenta como showcase técnico público de Marin Dev / Diego. Para consultas sobre una implementación similar o para revisar otros trabajos:
+
+- **WhatsApp:** [+598 097 316 092](https://wa.me/59897316092)
+- **Portfolio:** [daegon13.github.io](https://daegon13.github.io)
+- **Instagram:** [@marin_dev_](https://www.instagram.com/marin_dev_/)
 
 ## Cómo correr localmente
 
@@ -129,7 +137,7 @@ Abrir `http://localhost:3000`.
 | `OPENAI_API_KEY` | Habilita integraciones IA opcionales. |
 | `OPENAI_MODEL` | Modelo usado por las funciones IA. |
 | `NEXT_PUBLIC_SITE_URL` | URL canónica pública para metadata y links. |
-| `NEXT_PUBLIC_CONTACT_URL` | CTA de contacto público. |
+| `NEXT_PUBLIC_CONTACT_URL` | CTA de contacto público; fallback a WhatsApp de Marin Dev. |
 | `APP_VERSION` | Etiqueta de versión/entorno para observabilidad o deploy. |
 
 ## Comandos útiles
@@ -150,7 +158,7 @@ Abrir `http://localhost:3000`.
 
 Antes de compartir el link público:
 
-- Reemplazar `https://<smart-stock-demo-url>` por el dominio definitivo.
+- Confirmar que `NEXT_PUBLIC_SITE_URL` apunta al dominio público definitivo del showcase.
 - Confirmar que el deploy usa `SHOWCASE_MODE=true` y `SHOWCASE_READONLY=true`.
 - Cargar el dataset demo con `npm run db:seed:showcase` contra una DB sin datos reales.
 - Guardar el `store.id` impreso por el seed como `DEMO_STORE_ID` si el entorno tiene más de un local.
