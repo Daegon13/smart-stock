@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { Badge, Button, Card, CardContent, CardHeader, Sticker } from "@/components/ui";
-import { PUBLIC_CONTACT_URL } from "@/lib/clientShowcase";
+import { contact } from "@/lib/contact";
 
 export const metadata: Metadata = {
   title: "Recorrido técnico | Smart Stock",
@@ -152,9 +152,17 @@ export default function AboutDemoPage() {
               <div className="text-sm font-semibold">¿Querés una implementación similar?</div>
               <p className="mt-1 text-sm leading-6 text-slate-300">La demo está orientada a mostrar criterio de producto, ejecución full-stack y una base clara para adaptar a procesos reales.</p>
             </div>
-            <Button asChild>
-              <a href={PUBLIC_CONTACT_URL}>Contactar por una implementación</a>
-            </Button>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Button asChild>
+                <a href={contact.whatsappHref} target="_blank" rel="noreferrer">Hablar sobre una implementación</a>
+              </Button>
+              <Button asChild variant="outline" className="border-white/20 bg-white/10 text-white hover:bg-white/20">
+                <a href={contact.websiteHref} target="_blank" rel="noreferrer">Ver portfolio</a>
+              </Button>
+              <Button asChild variant="ghost" className="text-white hover:bg-white/10">
+                <a href={contact.instagramHref} target="_blank" rel="noreferrer">Seguir en Instagram</a>
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>

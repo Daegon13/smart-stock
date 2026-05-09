@@ -1,3 +1,5 @@
+import { contact } from "@/lib/contact";
+
 export const SHOWCASE_READONLY_NOTICE = "Demo pública: acciones de escritura desactivadas.";
 
 export function isClientShowcaseReadonly() {
@@ -8,5 +10,4 @@ export function isClientShowcaseReadonly() {
 
 export const PUBLIC_SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://smart-stock-showcase.vercel.app";
 
-export const PUBLIC_CONTACT_URL =
-  process.env.NEXT_PUBLIC_CONTACT_URL || "mailto:contacto@marindev.com?subject=Implementaci%C3%B3n%20Smart%20Stock";
+export const PUBLIC_CONTACT_URL = process.env.NEXT_PUBLIC_CONTACT_URL || contact.whatsappHref;

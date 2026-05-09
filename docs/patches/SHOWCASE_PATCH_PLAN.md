@@ -482,8 +482,8 @@ Que al abrir el link se entienda rápidamente que esto es una muestra seria de c
 
 2. Agregar banner superior en panel:
    - “Smart Stock — Demo pública con datos de ejemplo”.
-   - “Desarrollado por MarinDev”.
-   - Link a contacto/portfolio.
+   - “Desarrollado por Marin Dev / Diego”.
+   - Links reales a WhatsApp, Instagram y portfolio.
 
 3. Agregar página o sección `/about-demo`:
    - Stack: Next.js, Prisma, PostgreSQL, Vercel.
@@ -500,7 +500,7 @@ Que al abrir el link se entienda rápidamente que esto es una muestra seria de c
 ```text
 Actuá como diseñador de producto y CRO engineer.
 
-Objetivo del patch: pulir Smart Stock como demo pública de capacidad técnica para MarinDev.
+Objetivo del patch: pulir Smart Stock como demo pública de capacidad técnica para Marin Dev / Diego.
 
 Tareas:
 1. Mejorar `app/(marketing)/page.tsx` con una landing más fuerte:

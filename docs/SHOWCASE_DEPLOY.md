@@ -30,7 +30,7 @@ DIRECT_URL=<postgres direct/non-pooling url>
 ```env
 APP_VERSION=showcase
 NEXT_PUBLIC_SITE_URL=https://<tu-dominio-publico>
-NEXT_PUBLIC_CONTACT_URL=mailto:<tu-email-publico>?subject=Implementaci%C3%B3n%20Smart%20Stock
+NEXT_PUBLIC_CONTACT_URL=https://wa.me/59897316092
 SHOWCASE_MODE=true
 NEXT_PUBLIC_SHOWCASE_MODE=true
 SHOWCASE_READONLY=true
@@ -47,7 +47,7 @@ NEXT_PUBLIC_SHOW_DEV_BANNERS=false
 Notas:
 
 - `NEXT_PUBLIC_SITE_URL` define la URL canónica usada por metadata/OpenGraph.
-- `NEXT_PUBLIC_CONTACT_URL` define el CTA comercial público; puede ser `mailto:`, portfolio, LinkedIn o formulario.
+- `NEXT_PUBLIC_CONTACT_URL` define el CTA comercial público. Para Marin Dev / Diego usar WhatsApp: `https://wa.me/59897316092`.
 - `SHOWCASE_MODE=true` es el switch server-side que habilita navegación pública sin login.
 - `NEXT_PUBLIC_SHOWCASE_MODE=true` solo expone el estado al cliente para mostrar banner/copy de demo.
 - `SHOWCASE_READONLY=true` bloquea mutaciones desde middleware/API.
@@ -55,6 +55,14 @@ Notas:
 - `AUTH_LOGIN_ENABLED=false` está permitido en público solo porque `SHOWCASE_MODE=true` deja claro que no es SaaS operativo.
 - `ALLOW_DEMO_SEED=false` evita que un endpoint de seed quede abierto en producción.
 - `DEMO_STORE_ID` evita ambigüedad si la DB tiene más de un local demo.
+
+### Contacto público de Marin Dev
+
+Usar estos links reales en CTAs comerciales y documentación de portfolio:
+
+- WhatsApp: [+598 097 316 092](https://wa.me/59897316092)
+- Portfolio: [daegon13.github.io](https://daegon13.github.io)
+- Instagram: [@marin_dev_](https://www.instagram.com/marin_dev_/)
 
 ### Build command recomendado
 
