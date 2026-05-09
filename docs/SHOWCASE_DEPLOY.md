@@ -10,7 +10,7 @@ Configuración esperada:
 
 - Landing pública clara en `/`.
 - Panel navegable desde `/today` sin login.
-- Dataset demo cargado con `scripts/seed-showcase.ts`.
+- Dataset demo cargado con `npm run db:seed:showcase`.
 - APIs de escritura bloqueadas cuando `SHOWCASE_READONLY=true`.
 - Auth real preservada detrás de flags para retomarla después.
 
@@ -68,7 +68,7 @@ El script genera Prisma y compila Next.js sin ejecutar seed automático.
 
 ## Cómo cargar el seed showcase
 
-El seed público no debe depender de que un visitante toque un botón en la UI. Cargalo como paso operativo controlado.
+El seed público no debe depender de que un visitante toque un botón en la UI. Cargalo como paso operativo controlado con `npm run db:seed:showcase`. Ese comando usa `scripts/seed-showcase.mjs` como launcher y carga `scripts/seed-showcase.ts` con `ts-node` en modo CommonJS para evitar problemas de ejecución de archivos `.ts` en entornos ESM.
 
 ### Opción local contra la DB configurada
 
@@ -79,7 +79,7 @@ El seed público no debe depender de que un visitante toque un botón en la UI. 
 npm run db:seed:showcase
 ```
 
-El seed es idempotente: crea o reutiliza la organización `showcase-org`, la franquicia `Showcase Franchise` y el local `Minimarket Demo`, además de catálogo, proveedores, movimientos y datos de muestra.
+El seed requiere `DATABASE_URL` apuntando a una base de datos preparada para demo. Es idempotente: crea o reutiliza la organización `showcase-org`, la franquicia `Showcase Franchise` y el local `Minimarket Demo`, además de catálogo, proveedores, movimientos y datos de muestra.
 
 ### Después del seed
 
